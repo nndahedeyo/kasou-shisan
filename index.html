@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="暗号資産に初めて触れる人が、お金を使わずに基本の考え方と操作を学ぶ練習所">
+<title>仮想資産 練習所</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+/* Layout: a practice hall. One narrow column, a stamp "仮" marks everything that isn't real. */
+:root{
+  --paper:#F2F4F6; --card:#FFFFFF; --ink:#18222E; --muted:#5B6877; --line:#D5DCE3;
+  --stamp:#C2382E; --stamp-soft:#F6E2DF; --indigo:#1F4E79; --indigo-soft:#E3ECF5;
+  --good:#23704A; --good-soft:#E1F1E8; --warn:#9A6A10; --warn-soft:#F7EED9;
+  --display:"Kaisei Decol","Hiragino Mincho ProN","Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#10151B; --card:#171E26; --ink:#E5EBF0; --muted:#97A4B2; --line:#2A3440;
+  --stamp:#E2594C; --stamp-soft:#3A1F1C; --indigo:#7FAEDC; --indigo-soft:#1B2A3A;
+  --good:#5BC28B; --good-soft:#163024; --warn:#E0B356; --warn-soft:#352A12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#10151B; --card:#171E26; --ink:#E5EBF0; --muted:#97A4B2; --line:#2A3440;
+  --stamp:#E2594C; --stamp-soft:#3A1F1C; --indigo:#7FAEDC; --indigo-soft:#1B2A3A;
+  --good:#5BC28B; --good-soft:#163024; --warn:#E0B356; --warn-soft:#352A12; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.75;margin:0}
+body::after{content:"仮";position:fixed;right:-2vw;bottom:-6vh;font-family:var(--display);font-size:46vh;line-height:1;color:var(--stamp);opacity:.05;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding-block:20px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.seal{width:52px;height:52px;border:3px solid var(--stamp);border-radius:50%;display:grid;place-items:center;color:var(--stamp);font-family:var(--display);font-size:28px;transform:rotate(-8deg);flex:none}
+.brand h1{font-family:var(--display);font-size:26px;line-height:1.2;margin:0;letter-spacing:.04em}
+.brand p{margin:0;color:var(--muted);font-size:13px}
+.tools{margin-left:auto;display:flex;gap:8px}
+button,.btn{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;font-weight:500}
+button:hover{border-color:var(--indigo)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+button.primary{background:var(--indigo);border-color:var(--indigo);color:var(--card)}
+button.danger{border-color:var(--stamp);color:var(--stamp)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.notice{border:1.5px dashed var(--stamp);background:var(--stamp-soft);border-radius:10px;padding:10px 14px;font-size:14px}
+.notice b{color:var(--stamp)}
+nav.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+nav.tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 12px;color:var(--muted)}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--stamp);font-weight:700}
+section.view{display:flex;flex-direction:column;gap:16px}
+h2{font-family:var(--display);font-size:22px;margin:0;line-height:1.35;text-wrap:balance}
+h3{font-size:17px;margin:0}
+.lead{color:var(--muted);margin:0}
+ol.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+ol.list li button{width:100%;display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;text-align:left;padding:12px 14px}
+.num{font-family:var(--mono);color:var(--muted);font-size:14px}
+.done-mark{font-size:13px;color:var(--good);font-weight:700;white-space:nowrap}
+.todo-mark{font-size:13px;color:var(--muted);white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card p{margin:0}
+.lesson-body p{margin:0}
+.lesson-body{display:flex;flex-direction:column;gap:10px;max-width:66ch}
+.term{display:grid;grid-template-columns:minmax(90px,140px) 1fr;gap:4px 14px;border-top:1px solid var(--line);padding-top:10px}
+.term dt{font-weight:700}
+.term dd{margin:0;color:var(--muted)}
+.quiz{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.choices{display:flex;flex-direction:column;gap:6px}
+.choices button{text-align:left}
+.choices button.right{border-color:var(--good);background:var(--good-soft)}
+.choices button.wrong{border-color:var(--stamp);background:var(--stamp-soft)}
+.feedback{border-radius:8px;padding:10px 12px;font-size:15px}
+.feedback.ok{background:var(--good-soft);color:var(--ink)}
+.feedback.ng{background:var(--stamp-soft);color:var(--ink)}
+.feedback.info{background:var(--indigo-soft);color:var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:620px){.split{grid-template-columns:1fr}}
+label{font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+input,select{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-width:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.addr{font-family:var(--mono);font-size:13px;word-break:break-all;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.bal{display:grid;grid-template-columns:auto 1fr auto;gap:6px 12px;align-items:center}
+.bal .v{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.coin{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;border:2px dashed var(--muted);font-family:var(--mono);font-size:10px;font-weight:500;position:relative;color:var(--ink);flex:none}
+.coin::after{content:"仮";position:absolute;right:-6px;top:-6px;width:17px;height:17px;border-radius:50%;background:var(--stamp);color:var(--card);font-family:var(--display);font-size:10px;display:grid;place-items:center}
+.coin.BTC{border-color:var(--warn)} .coin.ETH{border-color:var(--indigo)} .coin.SOL{border-color:var(--good)} .coin.USDC{border-color:var(--muted)} .coin.YEN{border-color:var(--stamp)}
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.steps button{padding:6px 10px;font-size:13px}
+.steps button.cur{border-color:var(--stamp);font-weight:700}
+.steps button.ok{background:var(--good-soft)}
+.wallet-pop{border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--card);max-width:420px}
+.wallet-pop .site{font-size:13px;color:var(--muted)}
+.wallet-pop .big{font-size:18px;font-weight:700}
+.words{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+@media (max-width:460px){.words{grid-template-columns:repeat(2,1fr)}}
+.words span{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--paper)}
+.words span i{font-style:normal;font-family:var(--mono);color:var(--muted);font-size:12px;margin-right:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{padding:6px 10px}
+svg.chart{width:100%;height:auto;display:block}
+.small{font-size:13px;color:var(--muted)}
+.foot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+@media (prefers-reduced-motion:no-preference){.card,.feedback{animation:fade .25s ease}}
+@keyframes fade{from{opacity:.4;transform:translateY(3px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="seal" aria-hidden="true">仮</div>
+    <div class="brand"><h1 id="t-title">仮想資産 練習所</h1><p id="t-sub"></p></div>
+    <div class="tools">
+      <button id="lang" type="button" aria-label="Language">English</button>
+    </div>
+  </header>
+  <div class="notice" id="t-notice"></div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-learn" aria-selected="true" data-view="learn"></button>
+    <button role="tab" id="tab-practice" aria-selected="false" data-view="practice"></button>
+    <button role="tab" id="tab-progress" aria-selected="false" data-view="progress"></button>
+  </nav>
+  <main id="main"></main>
+  <p class="foot" id="t-foot"></p>
+</div>
+
+<script>
+(() => {
+/* ---------- storage ---------- */
+const KEY = "kasou-renshujo.v1";
+const blank = () => ({lang:"ja", view:"learn", lesson:null, step:1, yen:0, ex:{BTC:0,ETH:0,SOL:0}, wal:null, lost:false, lessons:{}, steps:{}, quiz:{}});
+let S = blank();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const J = () => S.lang === "ja";
+const tx = (ja, en) => J() ? ja : en;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- sample price series (not real) ---------- */
+function seeded(seed){ let s = seed; return () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296; }
+function series(seed, start, vol){ const r = seeded(seed); const out = [start]; for (let i = 1; i < 30; i++) out.push(Math.round(out[i-1] * (1 + (r() - 0.48) * vol))); return out; }
+const COINS = {
+  BTC:{ja:"仮BTC", en:"Kari-BTC", net:["btc"], px:series(7, 10000000, 0.05), dec:6},
+  ETH:{ja:"仮ETH", en:"Kari-ETH", net:["eth"], px:series(11, 400000, 0.07), dec:5},
+  SOL:{ja:"仮SOL", en:"Kari-SOL", net:["sol"], px:series(23, 20000, 0.09), dec:4},
+};
+const NETS = {btc:{ja:"仮ビットコイン網",en:"Kari-Bitcoin network"}, eth:{ja:"仮イーサリアム網",en:"Kari-Ethereum network"}, bnb:{ja:"仮BNB網",en:"Kari-BNB network"}, sol:{ja:"仮ソラナ網",en:"Kari-Solana network"}};
+let REAL = null; /* set when prices.json (real CoinGecko history) loads */
+const price = c => COINS[c].px[29];
+const cname = c => J() ? COINS[c].ja : COINS[c].en;
+const yen = n => (J() ? "" : "") + Math.round(n).toLocaleString("ja-JP") + tx(" 仮円", " Kari-yen");
+const qty = (n, c) => (+n).toFixed(COINS[c].dec).replace(/\.?0+$/, "") || "0";
+const coin = c => `<span class="coin ${c}" aria-hidden="true">${c}</span>`;
+
+/* ---------- wallet helpers ---------- */
+const WORDS = ["さくら","うみ","やま","かぜ","ほし","つき","はな","もり","かわ","そら","ゆき","あめ","にじ","くも","いし","たね","みち","まど","かぎ","ふね","はし","とり","さかな","くるま","ほん","えき","まち","いえ","こめ","ちゃ","みず","ひかり","かげ","おと","いと","ぬの","かみ","すな","しお","さとう","たまご","りんご","みかん","ぶどう","もも","くり","まめ","のり","ねこ","いぬ","うさぎ","かめ","くま","しか","きつね","たぬき","すずめ","からす","つばめ","かえる","ほたる","とんぼ","せみ","ちょう"];
+function hash(str){ let h = 2166136261 >>> 0; for (const ch of str) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; }
+function addrFrom(words){ const al = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"; let h = hash(words.join(" ")), out = "kari1"; for (let i = 0; i < 34; i++) { h = Math.imul(h ^ (h >>> 13), 2654435761) >>> 0; out += al[h % 32]; } return out; }
+const poisoned = a => a.slice(0, 9) + a.slice(9, -5).split("").reverse().join("") + a.slice(-5);
+
+/* ---------- lessons ---------- */
+const L = [
+ {id:"ledger", ja:{t:"暗号資産とブロックチェーン", b:[
+   "ブロックチェーンは、世界中の参加者が同じものを持ち合う「台帳」です。誰が誰にいくら送ったかが、すべて記録されます。",
+   "銀行のような管理者がいない代わりに、参加者どうしが記録を確かめ合います。一度書かれた記録は、あとから誰も書き換えられません。",
+   "暗号資産は、この台帳の上に記録された「残高」です。手元に硬貨があるわけではなく、台帳に「あなたの鍵で動かせる分」が書かれているだけです。"],
+   q:"ブロックチェーンの記録について正しいのはどれ？", o:["管理者が間違いを直してくれる","一度書かれた記録は、誰も書き換えられない","自分のスマホの中にだけ保存される"], a:1,
+   x:"管理者がいないので、間違って送った記録も消せません。だから送る前の確認が大切です。"},
+  en:{t:"Crypto and the blockchain", b:[
+   "A blockchain is a ledger that participants around the world all keep a copy of. It records who sent how much to whom.",
+   "There is no bank-like operator. Participants check the records against each other instead, and once something is written, no one can rewrite it.",
+   "A crypto asset is a balance written on this ledger. You don't hold a coin; the ledger records an amount that your key can move."],
+   q:"Which is true about blockchain records?", o:["An operator fixes mistakes for you","Once written, no one can rewrite them","They are stored only on your phone"], a:1,
+   x:"With no operator, even a mistaken transfer can't be undone. That is why checking before you send matters."}},
+ {id:"keys", ja:{t:"鍵・アドレス・ウォレット", b:[
+   "暗号資産を持つうえで、いちばん大事なのは「鍵」です。銀行と違って、本人確認の窓口はありません。鍵を持っている人が、そのまま持ち主になります。"],
+   terms:[["鍵（秘密鍵・復元フレーズ）","印鑑と暗証番号を合わせたもの。これを持つ人が持ち主。誰にも見せない"],["アドレス","口座番号。鍵から作られ、人に教えてよい。受け取りに使う"],["ウォレット","鍵を入れる財布アプリ。アプリを消しても、鍵があれば別のアプリで元に戻せる"]],
+   b2:["つまり、あなたのアドレスとそれを動かせる鍵が、そのままあなたの「アカウント」です。家族が引き継ぐときも、引き継ぐのはこの鍵です。"],
+   q:"「復元フレーズを教えてください」と言われたら？", o:["サポートの人なら教えてよい","誰にも教えない","アドレスと同じなので教えてよい"], a:1,
+   x:"復元フレーズを知った人は、あなたの資産をすべて動かせます。聞いてくる人は、相手が誰であっても詐欺です。"},
+  en:{t:"Keys, addresses and wallets", b:[
+   "The most important thing in owning crypto is the key. Unlike a bank, there is no desk that checks who you are. Whoever holds the key is the owner."],
+   terms:[["Key (private key, recovery phrase)","Your seal and PIN in one. Whoever has it owns the funds. Never show it to anyone"],["Address","Your account number. Made from the key, safe to share, used to receive"],["Wallet","An app that holds the key. Delete the app and the key still restores everything in another app"]],
+   b2:["So your address, plus the key that can move it, is your account. When family inherits it, what they inherit is this key."],
+   q:"Someone asks for your recovery phrase. What do you do?", o:["Give it if they're from support","Never give it to anyone","Give it, it's the same as an address"], a:1,
+   x:"Anyone who knows your recovery phrase can move everything. Whoever asks for it is a scammer, no matter who they say they are."}},
+ {id:"custody", ja:{t:"取引所に預けるか、自分で持つか", b:[
+   "暗号資産を持つ方法は2つです。取引所に預けておくか、自分のウォレットで持つかです。",
+   "取引所に預けると、鍵は取引所が持ちます。手軽ですが、取引所が攻撃されれば失うことがあります。2024年5月、国内のDMMビットコインから約482億円分のビットコインが流出しました。",
+   "自分で持つと、取引所の事故には巻き込まれません。その代わり、鍵を守る責任はすべて自分にあります。",
+   "日本の取引所は国への登録が必要で、預かった資産を自社の資産と分けて管理する決まりがあります。それでも事故はゼロにはなりません。"],
+   q:"自分のウォレットで持つときの注意で正しいのは？", o:["取引所が鍵をなくしても困らないが、自分が鍵をなくすと戻らない","取引所が補償してくれる","鍵は取引所が預かってくれる"], a:0,
+   x:"自分で持つと、取引所のリスクは消えますが、鍵の管理の責任はすべて自分に移ります。"},
+  en:{t:"Leave it on an exchange, or hold it yourself", b:[
+   "There are two ways to hold crypto: leave it with an exchange, or keep it in your own wallet.",
+   "On an exchange, the exchange holds the key. It's easy, but if the exchange is hacked you can lose it. In May 2024, about ¥48.2 billion of bitcoin was stolen from DMM Bitcoin in Japan.",
+   "Holding it yourself keeps you out of exchange incidents. In exchange, protecting the key is entirely your job.",
+   "Exchanges in Japan must register with the government and keep customer assets separate from their own. Incidents still happen."],
+   q:"Which is true when you hold crypto in your own wallet?", o:["An exchange losing keys won't hurt you, but if you lose your key it's gone","The exchange will compensate you","The exchange keeps your key for you"], a:0,
+   x:"Self-custody removes exchange risk, but moves all key-keeping responsibility to you."}},
+ {id:"networks", ja:{t:"ネットワークとトークン", b:[
+   "暗号資産には、それが動く「ネットワーク（チェーン）」があります。ビットコイン網、イーサリアム網、ソラナ網などです。",
+   "同じ名前のトークンでも、別のネットワークの上に「包まれた版」があることがあります。たとえばイーサリアム網の上のNEARは、NEAR網の本物のNEARとは別物です。ネットワーク間を移す仕組みを「ブリッジ」と呼びます。",
+   "送るときにネットワークを取り違えると、相手に届かず、取り戻せないことがあります。送り先と受け取り側が同じネットワークかを、必ず確かめます。"],
+   q:"仮ETHを送るとき、受け取り側は仮イーサリアム網のアドレスです。送る側で選ぶネットワークは？", o:["仮BNB網","どれでもよい","仮イーサリアム網"], a:2,
+   x:"受け取り側と同じネットワークを選びます。違うネットワークで送ると、届かないことがあります。"},
+  en:{t:"Networks and tokens", b:[
+   "Every crypto asset runs on a network (chain): the Bitcoin network, Ethereum, Solana and so on.",
+   "A token with the same name can also exist as a wrapped version on another network. NEAR on Ethereum, for example, is not the same as native NEAR on the NEAR network. Moving between networks is done by a bridge.",
+   "Pick the wrong network when sending and the funds may never arrive and can't be recovered. Always check that sender and receiver use the same network."],
+   q:"You're sending Kari-ETH to an address on the Kari-Ethereum network. Which network do you pick?", o:["Kari-BNB network","Any of them","Kari-Ethereum network"], a:2,
+   x:"Pick the same network as the receiver. A different network may never deliver."}},
+ {id:"sending", ja:{t:"送るときの確認", b:[
+   "アドレスは長い英数字です。最初と最後の数文字だけ見て送ると、だまされることがあります。",
+   "「似たアドレスの詐欺」では、あなたのアドレスによく似たアドレスから少額が送られてきます。履歴からうっかりコピーすると、詐欺師に送ってしまいます。",
+   "大きな額を送る前は、まず少額で試し、届いたのを確かめてから残りを送ります。送るたびに、手数料（ガス代）がかかります。"],
+   q:"よく使う送り先を毎回確かめる、いちばん確かな方法は？", o:["送金履歴からコピーする","自分で登録したアドレス帳から選び、全部の文字を照らし合わせる","最初の4文字が合っていればよい"], a:1,
+   x:"履歴には詐欺師の似たアドレスが混ざります。自分で登録した送り先を使い、全体を確かめます。"},
+  en:{t:"Checking before you send", b:[
+   "Addresses are long strings. Checking only the first and last few characters can get you fooled.",
+   "In address poisoning, a scammer sends you a tiny amount from an address that looks like one you use. Copy it from your history by mistake and you pay the scammer.",
+   "Before sending a large amount, send a small test first and confirm it arrived. Every transfer costs a network fee (gas)."],
+   q:"What's the most reliable way to pick a frequent recipient?", o:["Copy it from your transaction history","Pick it from your own address book and compare every character","If the first 4 characters match, it's fine"], a:1,
+   x:"History can contain a scammer's look-alike. Use an address you saved yourself and check the whole thing."}},
+ {id:"signing", ja:{t:"署名と承認", b:[
+   "ウォレットで「署名」や「確定」を押すことは、その中身に同意したという意味です。取り消しはできません。",
+   "危ないのは「承認（approve）」です。あるサイトに、あなたのトークンを動かす許可を与えるものです。「無制限」の承認を与えると、そのサイトが乗っ取られたとき、全部を持っていかれます。",
+   "ウォレットに「不明なトランザクション」と出たら、ウォレットが中身を読めていない合図です。出ていくもの・入ってくるもの・受け取り先が分からないなら、署名しないのが原則です。"],
+   q:"見知らぬサイトが「無制限の承認」を求めてきました。どうする？", o:["急いでいるなら署名する","拒否する","署名してから、あとで取り消せばよい"], a:1,
+   x:"承認は、相手にあなたのトークンを動かす許可を渡すことです。知らない相手に無制限で渡してはいけません。"},
+  en:{t:"Signing and approvals", b:[
+   "Pressing Sign or Confirm in a wallet means you agree to what's inside. It can't be undone.",
+   "The dangerous one is an approval. It lets a site move your tokens. Give an unlimited approval, and if that site is compromised, everything can be taken.",
+   "If your wallet shows 'unknown transaction', it means the wallet can't read what's inside. If you can't tell what leaves, what arrives and where it goes, don't sign."],
+   q:"An unfamiliar site asks for an unlimited approval. What do you do?", o:["Sign if you're in a hurry","Reject it","Sign now and cancel later"], a:1,
+   x:"An approval hands someone permission to move your tokens. Never give an unknown party unlimited permission."}},
+ {id:"scams", ja:{t:"詐欺の見分け方", b:[
+   "偽物は、見た目では見分けられません。偽のトークンは、本物と同じアイコンと名前で作られます。偽のサイトも、本物そっくりに作られます。",
+   "確かめられるのは「契約アドレス」と「公式の情報源」だけです。公式サイトやCoinGeckoなどに載っている契約アドレスと、手元のトークンの契約アドレスが一致するかを見ます。",
+   "向こうから来る話（DMで届く儲け話、エアドロップの案内、サポートを名乗る連絡）は、まず詐欺を疑います。"],
+   q:"本物のトークンかどうかを確かめる方法は？", o:["アイコンと名前が本物と同じか","契約アドレスが、公式の情報源のものと一致するか","SNSで人気かどうか"], a:1,
+   x:"アイコンと名前はいくらでも真似できます。真似できないのは契約アドレスです。"},
+  en:{t:"Spotting scams", b:[
+   "Fakes can't be spotted by looks. Fake tokens use the same icon and name as the real one, and fake sites copy the real ones closely.",
+   "The only things you can check are the contract address and official sources. Compare the token's contract address with the one listed on the official site or a source like CoinGecko.",
+   "Anything that comes to you unasked, like a DM about profits, an airdrop invite or someone claiming to be support, is a scam until proven otherwise."],
+   q:"How do you check that a token is the real one?", o:["Its icon and name match","Its contract address matches the one from official sources","It's popular on social media"], a:1,
+   x:"Icons and names can be copied freely. The contract address can't."}},
+ {id:"inherit", ja:{t:"鍵を守る・家族に引き継ぐ", b:[
+   "復元フレーズは紙に書いて、安全な場所に保管します。写真やクラウド、メモアプリには置きません。乗っ取られたときに一緒に盗まれるからです。",
+   "パスキー（指紋や顔認証）で動くウォレットや、信頼できる人に復旧を手伝ってもらう仕組みもあります。紙をなくす心配を減らせます。",
+   "あなたが亡くなったとき、家族が鍵の場所を知らなければ、資産は誰にも動かせないまま残ります。銀行のように、窓口で手続きすることはできません。元気なうちに、引き継ぎの方法を決めておきます。"],
+   q:"持ち主が亡くなり、家族が鍵の場所を知りません。資産はどうなる？", o:["取引所や国が家族に戻してくれる","誰にも動かせないまま残る","時間がたつと自動で家族に移る"], a:1,
+   x:"自分で持つ資産は、鍵がなければ誰も動かせません。引き継ぎは、生きているうちに準備します。"},
+  en:{t:"Protecting keys and passing them on", b:[
+   "Write your recovery phrase on paper and store it somewhere safe. Never keep it in photos, cloud storage or note apps, which get stolen along with your accounts.",
+   "There are also wallets that work with passkeys (fingerprint or face) and ones where trusted people help you recover. They reduce the risk of losing the paper.",
+   "If you die and your family doesn't know where the key is, the assets stay locked forever. There's no counter to claim them like at a bank. Decide how to pass them on while you're well."],
+   q:"An owner dies and the family doesn't know where the key is. What happens?", o:["The exchange or the government returns it to the family","It stays locked and no one can move it","It moves to the family automatically after a while"], a:1,
+   x:"Self-held assets can't move without the key. Plan the handover while you're alive."}},
+ {id:"value", ja:{t:"トークンの価値の見方（3つの軸）", b:[
+   "トークンを見るときは、値段ではなく、次の3つで中身を見ます。これは見方の練習で、何を買うべきかを決めるものではありません。",
+   "還元：そのトークンを持つ人に、何かが返ってくる仕組みがあるか。たとえば収益での買い戻しや焼却です。「返ってくることを確認できる」のか「返ってくることを期待しているだけ」なのかを分けて見ます。",
+   "地位：その分野で、どんな位置にいるか。利用者や取引量、分野の首位かどうかなどです。",
+   "供給：これからどれだけ増えるか。発行の上限、ロック解除の予定、運営がどれだけ持っているかを見ます。新しく大量に発行され続けるトークンは、売られる圧力が強くなります。"],
+   q:"「還元」を見るときに大事なのは？", o:["SNSで話題かどうか","確認できる還元と、期待しているだけの還元を分けること","値段が上がっているかどうか"], a:1,
+   x:"約束や期待と、実際に確認できる仕組みは別物です。"},
+  en:{t:"Reading a token's value: three axes", b:[
+   "Look past the price at three things. This is practice in reading a token, not advice on what to buy.",
+   "Returns: is there a mechanism that gives holders something back, like buybacks or burns from revenue? Separate returns you can verify from returns people only expect.",
+   "Position: where does it stand in its field? Users, volume, whether it leads its sector.",
+   "Supply: how much more is coming? Look at caps, unlock schedules and how much the team holds. Tokens that keep issuing large amounts face steady selling."],
+   q:"What matters most when looking at returns?", o:["Whether it's trending","Separating verifiable returns from expected ones","Whether the price is rising"], a:1,
+   x:"A promise or a hope is not the same as a mechanism you can check."}},
+ {id:"promises", ja:{t:"約束は守られる仕組みか", b:[
+   "株式なら、会社が「配当を出す」と約束すれば、取引所や国が守らせます。暗号資産には、その役目の人がいません。",
+   "だから、約束がどう守られるかを見ます。運営がその気になれば変えられる約束か、コードで自動的に実行される約束か。さらに強いのは、破ったら保有者に担保が渡る約束です。",
+   "トークン憲章という公開の台帳では、こうした約束を10項目で採点しています。採点した主な30銘柄に、担保つきの約束をしているものはありませんでした。"],
+   q:"いちばん強い約束はどれ？", o:["運営がSNSで約束したもの","コードで自動実行され、破れば担保が保有者に渡るもの","有名人が勧めているもの"], a:1,
+   x:"守らせる仕組みがあるほど、約束は信用できます。"},
+  en:{t:"Are promises enforced?", b:[
+   "With stocks, exchanges and regulators make companies keep promises like dividends. Crypto has no one in that role.",
+   "So look at how a promise is kept. Can the team change it whenever it wants, or does code carry it out automatically? Stronger still is a promise backed by collateral that goes to holders if it's broken.",
+   "Token Charter, a public ledger, scores these promises on 10 items. None of the 30 major tokens it scored backs its promises with collateral."],
+   q:"Which promise is strongest?", o:["One the team made on social media","One run by code, with collateral paid to holders if broken","One a celebrity recommends"], a:1,
+   x:"The more a promise is enforced, the more you can trust it."}},
+ {id:"market", ja:{t:"値動きの読み方", b:[
+   "ある銘柄の値段や収益が下がったとき、まず市場全体が下がっているのか、その銘柄だけが下がっているのかを分けて考えます。",
+   "市場全体が下がっているなら、その銘柄の中身が悪くなったとは限りません。その銘柄だけが下がっているなら、何か固有の理由（約束の変更、利用者の減少、大量のロック解除など）がないかを調べます。",
+   "売り買いには手数料がかかります。理由を分けずに慌てて売り買いすると、手数料だけを失うことがあります。"],
+   q:"ある銘柄の収益が半分になりました。最初に確かめることは？", o:["すぐに売る","市場全体も同じくらい減っているか","SNSの評判"], a:1,
+   x:"市場全体の動きか、銘柄固有の理由かで、意味がまったく違います。"},
+  en:{t:"Reading price moves", b:[
+   "When a token's price or revenue falls, first separate the whole market from the token itself.",
+   "If the whole market fell, the token itself hasn't necessarily gotten worse. If only this token fell, look for a specific reason: a changed promise, fewer users, a big unlock.",
+   "Every trade has a fee. Rushing to trade without telling the two apart can just cost you fees."],
+   q:"A token's revenue halved. What do you check first?", o:["Sell immediately","Whether the whole market fell about as much","What social media says"], a:1,
+   x:"A market-wide move and a token-specific reason mean very different things."}},
+ {id:"speculation", ja:{t:"値上がりだけが目的の仕組みは崩れやすい", b:[
+   "人とのつながりや投稿にトークンの値段をつけたSNS（SocialFi）は、多くが9割以上値下がりしました。集まったのは使う人ではなく、値上がりを待つ人だったからです。",
+   "新しく買う人が途切れると、値下がりと利用者の離脱が連鎖します。値段以外に使い道があるかを見ることが大切です。",
+   "「必ず儲かる」「今だけ」という言葉は、仕組みではなく勢いで売ろうとしている合図です。"],
+   q:"長く続きやすいのはどれ？", o:["値上がりだけが参加の理由になっている仕組み","値段がなくても使う理由がある仕組み","有名人が宣伝している仕組み"], a:1,
+   x:"使う理由がある仕組みは、値段が下がっても人が残ります。"},
+  en:{t:"Systems built only on price rises tend to collapse", b:[
+   "Most social apps that put a token price on relationships and posts (SocialFi) fell 90% or more. They drew people waiting for gains, not people using them.",
+   "Once new buyers dry up, falling prices and leaving users feed each other. Check whether there's a use besides the price.",
+   "Words like 'guaranteed profit' or 'only now' mean someone is selling on hype, not on how it works."],
+   q:"Which tends to last?", o:["One where rising prices are the only reason to join","One people would use even without a price","One promoted by celebrities"], a:1,
+   x:"When there's a reason to use it, people stay even when prices fall."}},
+ {id:"utxo", ja:{t:"お札型と口座型（UTXOとアカウント）", b:[
+   "ビットコインなどは「お札型（UTXO）」です。財布の中のお札のように、まだ使っていない分の合計が残高です。払うときはお札を丸ごと出し、おつりを自分に戻します。",
+   "イーサリアムなどは「口座型（アカウント）」です。残高という1つの数字を増やしたり減らしたりします。",
+   "口座型には、他人に自分のトークンを動かす許可（承認）を与える仕組みがあります。便利ですが、盗難の入口にもなります。お札型には、その仕組みがもともとありません。"],
+   q:"ビットコインで3,000の支払いに5,000のお札（UTXO）を使うと？", o:["5,000がすべてなくなる","3,000を払い、2,000がおつりとして自分に戻る","払えない"], a:1,
+   x:"お札は丸ごと使い、おつりは新しいお札として自分に戻ります。"},
+  en:{t:"Bills and accounts (UTXO vs account)", b:[
+   "Bitcoin and similar chains work like bills (UTXO). Your balance is the sum of unspent bills. To pay, you hand over a whole bill and get change back.",
+   "Ethereum and similar chains work like accounts: one balance number goes up and down.",
+   "Account chains let you grant others permission (approvals) to move your tokens. Handy, but also a way in for theft. Bill-style chains don't have that at all."],
+   q:"You pay 3,000 in bitcoin using a 5,000 bill (UTXO). What happens?", o:["All 5,000 is gone","You pay 3,000 and 2,000 comes back to you as change","You can't pay"], a:1,
+   x:"A bill is spent whole, and the change comes back to you as a new bill."}},
+ {id:"japan", ja:{t:"日本のルールと取引所", b:[
+   "日本で円と暗号資産を交換できるのは、国（金融庁）に登録した交換業者だけです。登録のない海外の業者は、国から警告を受けていることがあります。",
+   "国内の取引所でも、銘柄によっては自分のウォレットへ送り出せない（出庫できない）ことがあります。買う前に、その取引所で出庫できる銘柄かを確かめます。",
+   "どの銘柄を買うべきかを勧めて報酬を受け取ることは、投資助言として規制される方向です。人の「おすすめ」には、誰がお金を払っているかを考えます。"],
+   q:"国内の取引所で買った銘柄を、自分のウォレットへ移したいとき、先に確かめることは？", o:["その取引所で、その銘柄が出庫できるか","SNSでの評判","値段が上がっているか"], a:0,
+   x:"出庫できない銘柄は、取引所の中でしか持てません。"},
+  en:{t:"Japan's rules and exchanges", b:[
+   "In Japan, only exchanges registered with the Financial Services Agency may trade crypto for yen. Unregistered overseas operators may have received government warnings.",
+   "Even domestic exchanges sometimes can't send certain coins out to your own wallet. Before buying, check that the exchange allows withdrawals of that coin.",
+   "Recommending what to buy for a fee is moving toward regulation as investment advice. With any recommendation, ask who is paying for it."],
+   q:"You want to move a coin from a Japanese exchange to your own wallet. What do you check first?", o:["Whether that exchange allows withdrawing that coin","Its reputation on social media","Whether the price is rising"], a:0,
+   x:"A coin you can't withdraw can only be held inside that exchange."}},
+];
+
+/* ---------- practice steps ---------- */
+const STEPS = [
+ {n:1, ja:"仮円を受け取る", en:"Get practice yen"},
+ {n:2, ja:"仮取引所で買う", en:"Buy on the practice exchange"},
+ {n:3, ja:"仮ウォレットを作る", en:"Create a practice wallet"},
+ {n:4, ja:"ウォレットへ送る", en:"Send to your wallet"},
+ {n:5, ja:"署名を読む", en:"Read what you sign"},
+ {n:6, ja:"本物を見分ける", en:"Spot the real token"},
+ {n:7, ja:"スマホをなくしたら", en:"If you lose your phone"},
+ {n:8, ja:"家族への引き継ぎ", en:"Passing it on"},
+];
+
+/* ---------- static text ---------- */
+function staticText(){
+  document.documentElement.lang = S.lang;
+  $("#t-title").textContent = tx("仮想資産 練習所", "Kasou Shisan Practice Hall");
+  $("#t-sub").textContent = tx("暗号資産を、お金を使わずに一から学ぶ場所", "Learn crypto from scratch without spending money");
+  $("#t-notice").innerHTML = REAL
+    ? tx(`<b>ここは練習所です。</b>お金も本物の暗号資産も、一切使いません。「仮」の付いたものは、すべて本物ではありません。値動きは、本物のBTC・ETH・SOLの過去30日の円建て価格を写したものです（CoinGecko、${REAL}時点）。`,
+         `<b>This is a practice hall.</b> No money and no real crypto are used. Everything marked 仮 (kari, 'practice') is not real. Price lines copy the last 30 days of real BTC, ETH and SOL prices in yen (CoinGecko, as of ${REAL}).`)
+    : tx("<b>ここは練習所です。</b>お金も本物の暗号資産も、一切使いません。「仮」の付いたものは、すべて本物ではありません。値段は見本で、実際の価格ではありません。",
+    "<b>This is a practice hall.</b> No money and no real crypto are used. Everything marked 仮 (kari, 'practice') is not real. Prices are samples, not actual market prices.");
+  $("#tab-learn").textContent = tx("基本の部屋", "Basics");
+  $("#tab-practice").textContent = tx("練習の部屋", "Practice");
+  $("#tab-progress").textContent = tx("進み具合", "Progress");
+  $("#lang").textContent = J() ? "English" : "日本語";
+  $("#t-foot").textContent = tx("この練習所は、どの銘柄を買うべきかは教えません。仕組みと操作を学ぶためのものです。記録はこの端末の中だけに残ります。",
+    "This hall never tells you what to buy. It teaches how things work and how to operate them. Your progress stays on this device only.");
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.view === S.view)));
+}
+
+/* ---------- views ---------- */
+function render(){
+  staticText();
+  const m = $("#main");
+  if (S.view === "learn") m.innerHTML = S.lesson ? lessonView(S.lesson) : learnList();
+  else if (S.view === "practice") m.innerHTML = practiceView();
+  else m.innerHTML = progressView();
+  bind();
+}
+
+function learnList(){
+  const items = L.map((l, i) => { const d = S.lessons[l.id]; const c = J() ? l.ja : l.en;
+    return `<li><button type="button" data-lesson="${l.id}"><span class="num">${String(i+1).padStart(2,"0")}</span><span>${esc(c.t)}</span><span class="${d ? "done-mark" : "todo-mark"}">${d ? tx("済","Done") : tx("未","To do")}</span></button></li>`; }).join("");
+  return `<section class="view"><h2>${tx("基本の部屋","Basics")}</h2><p class="lead">${tx("上から順に読むと、暗号資産の土台となる考え方がひととおり身につきます。各部屋の最後に確認の問題があります。","Read from the top and you'll have the core ideas behind crypto. Each lesson ends with a check question.")}</p><ol class="list">${items}</ol></section>`;
+}
+
+function lessonView(id){
+  const i = L.findIndex(l => l.id === id), l = L[i], c = J() ? l.ja : l.en, ans = S.quiz[id];
+  const terms = c.terms ? `<dl class="term">${c.terms.map(t => `<dt>${esc(t[0])}</dt><dd>${esc(t[1])}</dd>`).join("")}</dl>` : "";
+  const b2 = c.b2 ? c.b2.map(p => `<p>${esc(p)}</p>`).join("") : "";
+  const opts = c.o.map((o, k) => { let cls = ""; if (ans !== undefined) { if (k === c.a) cls = "right"; else if (k === ans) cls = "wrong"; }
+    return `<button type="button" class="${cls}" data-ans="${k}" ${ans !== undefined ? "disabled" : ""}>${esc(o)}</button>`; }).join("");
+  const fb = ans === undefined ? "" : `<div class="feedback ${ans === c.a ? "ok" : "ng"}">${ans === c.a ? tx("正解です。","Correct.") : tx("ちがいます。","Not quite.")} ${esc(c.x)}</div>`;
+  const next = L[i+1];
+  return `<section class="view"><div class="row"><button type="button" data-back>${tx("← 部屋の一覧","← All lessons")}</button><span class="small">${i+1} / ${L.length}</span></div>
+    <article class="card"><h2>${esc(c.t)}</h2><div class="lesson-body">${c.b.map(p => `<p>${esc(p)}</p>`).join("")}${terms}${b2}</div>
+    <div class="quiz"><h3>${tx("確認","Check")}：${esc(c.q)}</h3><div class="choices">${opts}</div>${fb}
+    ${ans !== undefined && ans !== c.a ? `<div><button type="button" data-retry>${tx("もう一度","Try again")}</button></div>` : ""}</div></article>
+    ${next ? `<div><button type="button" class="primary" data-lesson="${next.id}">${tx("次の部屋へ","Next lesson")}：${esc((J() ? next.ja : next.en).t)}</button></div>` : `<div><button type="button" class="primary" data-go="practice">${tx("練習の部屋へ進む","Go to Practice")}</button></div>`}
+  </section>`;
+}
+
+function stepNav(){
+  return `<div class="steps">${STEPS.map(s => `<button type="button" data-step="${s.n}" class="${s.n === S.step ? "cur" : ""} ${S.steps[s.n] ? "ok" : ""}">${s.n}. ${J() ? s.ja : s.en}</button>`).join("")}</div>`;
+}
+
+function balances(){
+  const ex = Object.keys(S.ex).filter(c => S.ex[c] > 0).map(c => `${coin(c)}<span>${cname(c)}</span><span class="v">${qty(S.ex[c], c)}</span>`).join("");
+  const wb = S.wal && !S.lost ? Object.keys(S.wal.bal).filter(c => S.wal.bal[c] > 0).map(c => `${coin(c)}<span>${cname(c)}</span><span class="v">${qty(S.wal.bal[c], c)}</span>`).join("") : "";
+  return `<div class="split">
+    <div class="card"><h3>${tx("仮取引所の口座","Practice exchange account")}</h3><p class="small">${tx("鍵は取引所が持っています","The exchange holds the key")}</p>
+      <div class="bal">${coin("YEN")}<span>${tx("仮円","Kari-yen")}</span><span class="v">${Math.round(S.yen).toLocaleString("ja-JP")}</span>${ex}</div></div>
+    <div class="card"><h3>${tx("仮ウォレット","Practice wallet")}</h3>${S.wal && !S.lost ? `<p class="small">${tx("鍵はあなたが持っています","You hold the key")}</p><div class="addr">${S.wal.addr}</div><div class="bal">${wb || `<span></span><span class="small">${tx("まだ何もありません","Empty for now")}</span><span></span>`}</div>` : `<p class="small">${S.lost ? tx("スマホをなくしたため、今は開けません","Can't open: the phone was lost") : tx("まだ作っていません（練習3）","Not created yet (step 3)")}</p>`}</div>
+  </div>`;
+}
+
+function chart(c){
+  const px = COINS[c].px, lo = Math.min(...px), hi = Math.max(...px), W = 600, H = 160, pad = 8;
+  const X = i => pad + i * (W - 2 * pad) / 29, Y = v => H - pad - (v - lo) / (hi - lo || 1) * (H - 2 * pad);
+  const d = px.map((v, i) => `${i ? "L" : "M"}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H + 20}" role="img" aria-label="${tx("見本の値動き","Sample price line")}">
+    <line x1="${pad}" x2="${W - pad}" y1="${H - pad}" y2="${H - pad}" stroke="var(--line)"/>
+    <path d="${d}" fill="none" stroke="var(--indigo)" stroke-width="2"/>
+    <circle cx="${X(29)}" cy="${Y(px[29])}" r="4" fill="var(--stamp)"/>
+    <text x="${pad}" y="${H + 14}" font-size="12" fill="var(--muted)">${tx("30日前","30 days ago")}</text>
+    <text x="${W - pad}" y="${H + 14}" font-size="12" fill="var(--muted)" text-anchor="end">${tx("今","Now")}: ${yen(px[29])}</text></svg>`;
+}
+
+function practiceView(){
+  return `<section class="view"><h2>${tx("練習の部屋","Practice")}</h2><p class="lead">${tx("基本の部屋で学んだことを、仮円と仮の暗号資産で実際にやってみます。失敗しても何も失いません。","Try what you learned with practice yen and practice coins. Mistakes cost nothing here.")}</p>
+    ${stepNav()}${balances()}<div class="card" id="step">${stepBody(S.step)}</div></section>`;
+}
+
+let flash = null; /* one-shot feedback for the current step */
+function fbBox(){ if (!flash) return ""; const f = flash; flash = null; return `<div class="feedback ${f.k}">${f.m}</div>`; }
+function finish(n){ S.steps[n] = true; save(); }
+
+function stepBody(n){
+  if (n === 1) return `<h3>1. ${tx("仮円を受け取る","Get practice yen")}</h3>
+    <p>${tx("本物の取引所では、口座を開くときに本人確認があります。日本の取引所は国に登録していて、誰の口座かを確かめる決まりがあるからです。練習所では本人確認を省いて、10万仮円を配ります。","Real exchanges check your identity when you open an account. Japanese exchanges are registered and must know who each account belongs to. Here we skip that and give you 100,000 Kari-yen.")}</p>
+    <div class="row"><button type="button" class="primary" data-act="getyen" ${S.yen > 0 || S.steps[1] ? "disabled" : ""}>${tx("10万仮円を受け取る","Receive 100,000 Kari-yen")}</button></div>${fbBox()}`;
+  if (n === 2) { const c = S.pick || "BTC";
+    return `<h3>2. ${tx("仮取引所で買う","Buy on the practice exchange")}</h3>
+    <p>${tx("仮円で仮の暗号資産を買います。買ったものは、まず取引所の口座に入ります。この時点では、鍵は取引所が持っています。","Buy practice coins with Kari-yen. They land in your exchange account first, where the exchange holds the key.")}</p>
+    <div class="row">${Object.keys(COINS).map(k => `<button type="button" data-pick="${k}" class="${k === c ? "primary" : ""}">${coin(k)} ${cname(k)}</button>`).join("")}</div>
+    ${chart(c)}<p class="small">${REAL ? tx(`本物の${c}の過去30日の値動きを写しています（CoinGecko、${REAL}時点）。仮${c}は本物ではありません。`, `Copies the real ${c} price over the last 30 days (CoinGecko, as of ${REAL}). Kari-${c} is not real.`) : tx("線は見本の値動きです。実際の価格ではありません。","This line is a sample, not the real price.")}</p>
+    <div class="row"><label>${tx("使う仮円","Kari-yen to spend")}<input id="buyamt" type="number" min="1000" step="1000" value="30000" inputmode="numeric"></label>
+    <button type="button" class="primary" data-act="buy" data-coin="${c}">${tx("買う","Buy")}</button></div>${fbBox()}`; }
+  if (n === 3) {
+    if (!S.wal) return `<h3>3. ${tx("仮ウォレットを作る","Create a practice wallet")}</h3>
+      <p>${tx("自分で持つためのウォレットを作ります。作ると、12個のことば（復元フレーズ）が出ます。これがあなたの鍵です。","Create a wallet you control. It shows 12 words, your recovery phrase. That is your key.")}</p>
+      <div class="feedback info">${tx("本物では、このことばを紙に書き、誰にも見せません。写真やクラウドには置きません。","For real, write these words on paper and show no one. Never put them in photos or the cloud.")}</div>
+      <div class="row"><button type="button" class="primary" data-act="mkwal">${tx("ウォレットを作る","Create wallet")}</button></div>`;
+    if (!S.wal.backed) { const ask = S.wal.ask;
+      const opts = (k) => { const right = S.wal.words[k]; const pool = WORDS.filter(w => w !== right); const r = seeded(hash(S.wal.addr) + k); const pick = [right]; while (pick.length < 4) { const w = pool[Math.floor(r() * pool.length)]; if (!pick.includes(w)) pick.push(w); } return pick.sort(); };
+      return `<h3>3. ${tx("復元フレーズを書き写す","Write down your recovery phrase")}</h3>
+      <p>${tx("下の12個のことばを、番号と一緒に紙に書き写してください。書けたら、確かめの問題に答えます。","Copy these 12 words, with their numbers, onto paper. Then answer the check below.")}</p>
+      <div class="words">${S.wal.words.map((w, i) => `<span><i>${i+1}</i>${w}</span>`).join("")}</div>
+      <p>${tx("あなたのアドレス（人に教えてよい番号）","Your address (safe to share)")}:</p><div class="addr">${S.wal.addr}</div>
+      <div class="quiz"><h3>${tx("確かめ","Check")}</h3>${ask.map((k, j) => `<label>${tx(`${k+1}番目のことばは？`,`Word #${k+1}?`)}<select id="bk${j}"><option value="">—</option>${opts(k).map(w => `<option>${w}</option>`).join("")}</select></label>`).join("")}
+      <div><button type="button" class="primary" data-act="backup">${tx("確かめる","Check")}</button></div>${fbBox()}</div>`; }
+    return `<h3>3. ${tx("仮ウォレットができました","Your practice wallet is ready")}</h3><p>${tx("アドレスは口座番号、12個のことばは鍵です。鍵を持つあなたが、このウォレットの持ち主です。","The address is your account number; the 12 words are the key. Holding the key makes you the owner.")}</p><div class="addr">${S.wal.addr}</div>${fbBox()}`;
+  }
+  if (n === 4) {
+    if (!S.wal || !S.wal.backed) return `<h3>4. ${tx("ウォレットへ送る","Send to your wallet")}</h3><p>${tx("先に練習3でウォレットを作ってください。","Create your wallet in step 3 first.")}</p>`;
+    const owned = Object.keys(S.ex).filter(c => S.ex[c] > 0);
+    if (!owned.length) return `<h3>4. ${tx("ウォレットへ送る","Send to your wallet")}</h3><p>${tx("取引所の口座に送れるものがありません。練習2で買ってください。","Nothing to send. Buy something in step 2.")}</p>${fbBox()}`;
+    const c = owned.includes(S.sendc) ? S.sendc : owned[0];
+    return `<h3>4. ${tx("取引所から自分のウォレットへ送る","Send from the exchange to your wallet")}</h3>
+    <p>${tx("送り先のアドレスとネットワークを選びます。本物では、ここでの間違いは取り消せません。","Choose the address and network. For real, mistakes here can't be undone.")}</p>
+    <div class="split"><label>${tx("送るもの","Coin")}<select id="sc">${owned.map(k => `<option value="${k}" ${k === c ? "selected" : ""}>${cname(k)}（${qty(S.ex[k], k)}）</option>`).join("")}</select></label>
+    <label>${tx("ネットワーク","Network")}<select id="sn">${Object.keys(NETS).map(k => `<option value="${k}">${J() ? NETS[k].ja : NETS[k].en}</option>`).join("")}</select></label></div>
+    <p class="small">${tx("あなたのウォレットは、仮ビットコイン網・仮イーサリアム網・仮ソラナ網で受け取れます。","Your wallet receives on the Kari-Bitcoin, Kari-Ethereum and Kari-Solana networks.")}</p>
+    <label>${tx("送り先アドレス","Recipient address")}<input id="sa" class="mono" autocomplete="off" spellcheck="false"></label>
+    <div class="row"><button type="button" data-act="pastemine">${tx("ウォレットで表示したアドレスを貼る","Paste the address shown in my wallet")}</button><button type="button" data-act="pastehist">${tx("送金履歴から選ぶ","Pick from transaction history")}</button></div>
+    <label>${tx("送る量","Amount")}<input id="sq" type="number" min="0" step="any" value="${qty(S.ex[c] / 10, c)}"></label>
+    <p class="small">${tx("初めての送り先には、まず少額で試すのが基本です。","For a new recipient, send a small test first.")}</p>
+    <div><button type="button" class="primary" data-act="send">${tx("送る","Send")}</button></div>${fbBox()}`;
+  }
+  if (n === 5) { const R = S.sig || {};
+    const req = [
+      {id:"a", site:"kari-swap.example", ja:["交換（スワップ）","出ていく：0.01 仮ETH","入ってくる：40 仮USDC 以上","受け取り先：あなたのアドレス","期限：10分"], en:["Swap","Out: 0.01 Kari-ETH","In: at least 40 Kari-USDC","Receiver: your address","Expires: 10 min"], ok:"sign"},
+      {id:"b", site:"kari-airdrop-gift.example", ja:["承認（approve）","対象：あなたのすべての 仮USDC","上限：無制限","相手：0x9f3…（見知らぬ契約）"], en:["Approval","Token: all your Kari-USDC","Limit: unlimited","Spender: 0x9f3… (unknown contract)"], ok:"reject"},
+      {id:"c", site:"claim-kari-bonus.example", ja:["不明なトランザクション","「ボーナスを受け取る」ボタンから","中身：ウォレットが読めません"], en:["Unknown transaction","From a 'Claim bonus' button","Contents: the wallet can't read it"], ok:"reject"},
+    ];
+    const why = {a:tx("出ていくもの・入ってくるもの・受け取り先・期限がすべて読めて、額も決まっています。","Everything is readable: what leaves, what arrives, the receiver and the deadline, all with fixed amounts."),
+      b:tx("無制限の承認を見知らぬ相手に渡すと、その相手があなたの仮USDCをいつでも全部動かせます。","An unlimited approval to an unknown party lets them move all your Kari-USDC at any time."),
+      c:tx("中身が読めない署名は、しないのが原則です。「ボーナス」は典型的な誘い文句です。","Don't sign what you can't read. 'Bonus' is a classic lure.")};
+    return `<h3>5. ${tx("署名を読む","Read what you sign")}</h3><p>${tx("ウォレットに3つの署名の依頼が届きました。それぞれ、署名するか拒否するかを選んでください。","Your wallet got three signature requests. Decide for each: sign or reject.")}</p>
+    ${req.map(q => { const r = R[q.id]; const lines = (J() ? q.ja : q.en);
+      return `<div class="wallet-pop"><span class="site">${q.site}</span><span class="big">${lines[0]}</span>${lines.slice(1).map(x => `<span>${x}</span>`).join("")}
+      <div class="row"><button type="button" data-sig="${q.id}" data-v="reject" ${r ? "disabled" : ""}>${tx("拒否する","Reject")}</button><button type="button" class="primary" data-sig="${q.id}" data-v="sign" ${r ? "disabled" : ""}>${tx("署名する","Sign")}</button></div>
+      ${r ? `<div class="feedback ${r === q.ok ? "ok" : "ng"}">${r === q.ok ? tx("正しい判断です。","Right call.") : tx("本番なら危険でした。","For real, that would have been dangerous.")} ${why[q.id]}</div>` : ""}</div>`; }).join("")}
+    ${Object.keys(R).length ? `<div><button type="button" data-act="sigreset">${tx("やり直す","Start over")}</button></div>` : ""}`; }
+  if (n === 6) { const r = S.fake;
+    const off = "0xA0b8…6eB48", fakeA = "0xA0b8…6eB4B";
+    return `<h3>6. ${tx("本物のトークンを見分ける","Spot the real token")}</h3>
+    <p>${tx("ウォレットに、同じ名前・同じアイコンの「仮USDC」が2つ表示されています。どちらかは偽物です。","Your wallet shows two Kari-USDC with the same name and icon. One is fake.")}</p>
+    <div class="feedback info">${tx("仮USDC公式サイトに載っている契約アドレス","Contract address listed on the official Kari-USDC site")}: <span class="mono">${off}</span></div>
+    <div class="split">${[["x", fakeA], ["y", off]].map(([k, a]) => `<div class="card"><div class="row">${coin("USDC")}<b>${tx("仮USDC","Kari-USDC")}</b></div><span class="small">${tx("契約アドレス","Contract")}</span><span class="mono">${a}</span><button type="button" data-fake="${k}" ${r ? "disabled" : ""}>${tx("こちらが本物","This one is real")}</button></div>`).join("")}</div>
+    ${r ? `<div class="feedback ${r === "y" ? "ok" : "ng"}">${r === "y" ? tx("正解です。","Correct.") : tx("ちがいます。","Not quite.")} ${tx("最後の1文字が違います（B と 8）。見た目では見分けられず、公式の情報源の契約アドレスと全部の文字を照らし合わせて初めて分かります。","The last character differs (B vs 8). You can't tell by looks; only comparing every character with the official contract address works.")}</div><div><button type="button" data-act="fakereset">${tx("やり直す","Try again")}</button></div>` : ""}`; }
+  if (n === 7) {
+    if (!S.wal || !S.wal.backed) return `<h3>7. ${tx("スマホをなくしたら","If you lose your phone")}</h3><p>${tx("先に練習3でウォレットを作ってください。","Create your wallet in step 3 first.")}</p>`;
+    if (!S.lost) return `<h3>7. ${tx("スマホをなくしたら","If you lose your phone")}</h3><p>${tx("スマホをなくすと、ウォレットのアプリも消えます。でも資産はブロックチェーンの台帳の上にあるので、鍵（12個のことば）があれば、別のスマホで元に戻せます。","Lose your phone and the wallet app goes with it. The assets live on the blockchain, so with the key (the 12 words) you can restore them on another phone.")}</p><div class="row"><button type="button" class="danger" data-act="lose">${tx("スマホをなくしたことにする","Pretend the phone is lost")}</button></div>${fbBox()}`;
+    const chosen = S.restore || [];
+    const pool = [...S.wal.words].sort((x, y) => hash(x + "s") - hash(y + "s"));
+    return `<h3>7. ${tx("新しいスマホで元に戻す","Restore on a new phone")}</h3><p>${tx("書き写した12個のことばを、1番から順に選んでください。紙を見ながらで構いません。","Pick your 12 words in order, starting from #1. Use your paper.")}</p>
+    <div class="words">${Array.from({length:12}, (_, i) => `<span><i>${i+1}</i>${chosen[i] || "　"}</span>`).join("")}</div>
+    <div class="chips">${pool.map((w, i) => `<button type="button" data-word="${i}" ${chosen.length >= 12 || chosen.includes(w) ? "disabled" : ""}>${w}</button>`).join("")}</div>
+    <div class="row"><button type="button" data-act="restoreclear">${tx("消してやり直す","Clear")}</button><button type="button" class="primary" data-act="restore" ${chosen.length < 12 ? "disabled" : ""}>${tx("元に戻す","Restore")}</button><button type="button" data-act="peek">${tx("紙をなくした","I lost the paper")}</button></div>${fbBox()}`;
+  }
+  if (n === 8) { const c = S.inh || {};
+    const items = [["where", tx("復元フレーズの保管場所を、信頼できる家族に伝える方法を決めた（中身ではなく場所）","Decided how a trusted family member will learn where the phrase is kept (the place, not the words)")],
+      ["list", tx("どこに何を持っているか（取引所・ウォレット・ネットワーク）を一覧にした","Listed what is held where (exchanges, wallets, networks)")],
+      ["howto", tx("家族が戻し方を学べるように、この練習所を伝えた","Told family about this practice hall so they can learn how to restore")]];
+    const all = items.every(i => c[i[0]]);
+    return `<h3>8. ${tx("家族への引き継ぎ","Passing it on to family")}</h3>
+    <p>${tx("自分で持つ資産は、鍵がなければ誰も動かせません。亡くなったあとで、銀行のように窓口で手続きすることはできません。元気なうちに準備しておくことを、確かめてみましょう。","Self-held assets can't move without the key, and there's no counter to claim them like at a bank. Check the things to prepare while you're well.")}</p>
+    ${items.map(([k, t]) => `<label style="flex-direction:row;gap:10px;align-items:flex-start;color:var(--ink)"><input type="checkbox" id="inh-${k}" data-inh="${k}" ${c[k] ? "checked" : ""}> <span>${t}</span></label>`).join("")}
+    <div class="feedback ${all ? "ok" : "info"}">${all ? tx("これで、あなたに何かあっても、資産が誰にも動かせないまま残る心配が減ります。","Now your assets are far less likely to end up locked forever if something happens to you.") : tx("復元フレーズそのものを、遺言やメールに書くのは避けます。読んだ人が誰でも動かせてしまうからです。","Avoid writing the phrase itself into a will or email: anyone who reads it could move everything.")}</div>`; }
+  return "";
+}
+
+function progressView(){
+  const ld = L.filter(l => S.lessons[l.id]).length, sd = STEPS.filter(s => S.steps[s.n]).length;
+  return `<section class="view"><h2>${tx("進み具合","Progress")}</h2>
+    <div class="split"><div class="card"><h3>${tx("基本の部屋","Basics")}</h3><p class="mono" style="font-size:28px">${ld} / ${L.length}</p></div>
+    <div class="card"><h3>${tx("練習の部屋","Practice")}</h3><p class="mono" style="font-size:28px">${sd} / ${STEPS.length}</p></div></div>
+    ${ld === L.length && sd === STEPS.length ? `<div class="feedback ok">${tx("すべて終わりました。本物を扱うときも、ここで学んだ順番で確かめてください。","All done. When you handle the real thing, check things in the same order you practiced here.")}</div>` : ""}
+    <div class="card"><h3>${tx("最初からやり直す","Start over")}</h3><p class="small">${tx("仮円・仮ウォレット・進み具合をすべて消します。","Clears practice yen, the practice wallet and progress.")}</p>
+    <div class="row">${S.confirmReset ? `<button type="button" class="danger" data-act="reset">${tx("本当に消す","Yes, clear everything")}</button><button type="button" data-act="cancelreset">${tx("やめる","Cancel")}</button>` : `<button type="button" class="danger" data-act="askreset">${tx("すべて消す","Clear everything")}</button>`}</div></div></section>`;
+}
+
+/* ---------- events ---------- */
+function bind(){
+  document.querySelectorAll("[data-lesson]").forEach(b => b.onclick = () => { S.lesson = b.dataset.lesson; save(); render(); window.scrollTo(0, 0); });
+  document.querySelectorAll("[data-back]").forEach(b => b.onclick = () => { S.lesson = null; save(); render(); });
+  document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { S.view = b.dataset.go; S.lesson = null; save(); render(); window.scrollTo(0, 0); });
+  document.querySelectorAll("[data-ans]").forEach(b => b.onclick = () => { const id = S.lesson, l = L.find(x => x.id === id), c = J() ? l.ja : l.en, k = +b.dataset.ans;
+    S.quiz[id] = k; if (k === c.a) S.lessons[id] = true; save(); render(); });
+  document.querySelectorAll("[data-retry]").forEach(b => b.onclick = () => { delete S.quiz[S.lesson]; save(); render(); });
+  document.querySelectorAll("[data-step]").forEach(b => b.onclick = () => { S.step = +b.dataset.step; save(); render(); });
+  document.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => { S.pick = b.dataset.pick; save(); render(); });
+  document.querySelectorAll("[data-sig]").forEach(b => b.onclick = () => { S.sig = S.sig || {}; S.sig[b.dataset.sig] = b.dataset.v; const ok = S.sig.a === "sign" && S.sig.b === "reject" && S.sig.c === "reject"; if (ok) finish(5); save(); render(); });
+  document.querySelectorAll("[data-fake]").forEach(b => b.onclick = () => { S.fake = b.dataset.fake; if (S.fake === "y") finish(6); save(); render(); });
+  document.querySelectorAll("[data-word]").forEach(b => b.onclick = () => { S.restore = S.restore || []; if (S.restore.length < 12) S.restore.push(b.textContent); save(); render(); });
+  document.querySelectorAll("[data-inh]").forEach(b => b.onchange = () => { S.inh = S.inh || {}; S.inh[b.dataset.inh] = b.checked; if (["where","list","howto"].every(k => S.inh[k])) finish(8); save(); render(); });
+  const sc = $("#sc"); if (sc) sc.onchange = () => { S.sendc = sc.value; save(); render(); };
+  document.querySelectorAll("[data-act]").forEach(b => b.onclick = () => act(b.dataset.act, b));
+}
+
+function act(a, b){
+  if (a === "getyen") { S.yen = 100000; finish(1); flash = {k:"ok", m:tx("10万仮円が、仮取引所の口座に入りました。次は練習2で買ってみましょう。","100,000 Kari-yen is in your exchange account. Next, buy something in step 2.")}; }
+  if (a === "buy") { const c = b.dataset.coin, amt = Math.floor(+$("#buyamt").value || 0);
+    if (S.yen <= 0) flash = {k:"ng", m:tx("仮円がありません。練習1で受け取ってください。","No Kari-yen yet. Get some in step 1.")};
+    else if (amt < 1000) flash = {k:"ng", m:tx("1,000仮円以上を入れてください。","Enter at least 1,000 Kari-yen.")};
+    else if (amt > S.yen) flash = {k:"ng", m:tx("仮円が足りません。","Not enough Kari-yen.")};
+    else { const q = amt / price(c); S.yen -= amt; S.ex[c] += q; finish(2);
+      flash = {k:"ok", m:tx(`${qty(q, c)} ${cname(c)} を買いました。今は取引所の口座にあり、鍵は取引所が持っています。`, `Bought ${qty(q, c)} ${cname(c)}. It sits in the exchange account, where the exchange holds the key.`)}; } }
+  if (a === "mkwal") { const r = seeded((Date.now() % 100000) + 17); const words = []; while (words.length < 12) { const w = WORDS[Math.floor(r() * WORDS.length)]; if (!words.includes(w)) words.push(w); }
+    const ask = []; while (ask.length < 3) { const k = Math.floor(r() * 12); if (!ask.includes(k)) ask.push(k); } ask.sort((x, y) => x - y);
+    S.wal = {words, addr:addrFrom(words), bal:{BTC:0, ETH:0, SOL:0}, backed:false, ask}; }
+  if (a === "backup") { const ok = S.wal.ask.every((k, j) => $("#bk" + j).value === S.wal.words[k]);
+    if (ok) { S.wal.backed = true; finish(3); flash = {k:"ok", m:tx("確かめられました。本物でも、書き写したら必ずこうして確かめます。","Confirmed. For real, always check what you copied like this.")}; }
+    else flash = {k:"ng", m:tx("合っていません。書き写したものを見直してください。本物でここを間違えると、復元できません。","That doesn't match. Re-check your copy. Get this wrong for real and you can't restore.")}; }
+  if (a === "pastemine") { $("#sa").value = S.wal.addr; return; }
+  if (a === "pastehist") { $("#sa").value = poisoned(S.wal.addr); flash = null; return; }
+  if (a === "send") { const c = $("#sc").value, net = $("#sn").value, to = $("#sa").value.trim(), q = +$("#sq").value;
+    if (!(q > 0) || q > S.ex[c] + 1e-12) flash = {k:"ng", m:tx("送る量を確かめてください。","Check the amount.")};
+    else if (to === poisoned(S.wal.addr)) flash = {k:"ng", m:tx("本番なら、ここで失っていました。履歴にあったのは、あなたのアドレスに似せた詐欺師のアドレスです。最初と最後は同じですが、真ん中が違います。自分のウォレットで表示したアドレスを使い、全部の文字を確かめてください。","For real, this would be lost. The history held a scammer's look-alike of your address: same start and end, different middle. Use the address shown in your own wallet and check every character.")};
+    else if (to !== S.wal.addr) flash = {k:"ng", m:tx("送り先がウォレットのアドレスと一致しません。","The recipient doesn't match your wallet address.")};
+    else if (!COINS[c].net.includes(net)) flash = {k:"ng", m:tx(`本番なら、届かなかった可能性があります。${cname(c)}を、あなたのウォレットが受け取る網とは違う「${J() ? NETS[net].ja : NETS[net].en}」で送ろうとしました。受け取り側と同じネットワークを選んでください。`, `For real, this might never have arrived. You tried to send ${cname(c)} over the ${NETS[net].en}, which isn't the network your wallet receives it on. Pick the receiver's network.`)};
+    else { S.ex[c] -= q; S.wal.bal[c] = (S.wal.bal[c] || 0) + q; finish(4);
+      flash = {k:"ok", m:tx(`${qty(q, c)} ${cname(c)} が、あなたのウォレットに届きました。これで鍵はあなたが持っています。`, `${qty(q, c)} ${cname(c)} arrived in your wallet. Now you hold the key.`)}; } }
+  if (a === "sigreset") { S.sig = {}; }
+  if (a === "fakereset") { S.fake = null; }
+  if (a === "lose") { S.lost = true; S.restore = []; }
+  if (a === "restoreclear") { S.restore = []; }
+  if (a === "restore") { if ((S.restore || []).join(" ") === S.wal.words.join(" ")) { S.lost = false; finish(7); flash = {k:"ok", m:tx("元に戻りました。残高もそのままです。資産はスマホではなく台帳の上にあり、鍵があれば戻せます。","Restored, balances intact. The assets live on the ledger, not the phone, and the key brings them back.")}; }
+    else { S.restore = []; flash = {k:"ng", m:tx("順番かことばが違います。本番では、1つでも違うと別のウォレットになってしまいます。","Wrong word or order. For real, one wrong word opens a different, empty wallet.")}; } }
+  if (a === "peek") { flash = {k:"ng", m:tx("本番なら、鍵をなくしたことになり、資産は二度と戻りません。取引所のように問い合わせる窓口はありません。練習なので、下に12個のことばを表示します。","For real, the key is gone and so are the assets. There's no support desk like an exchange has. Since this is practice, your 12 words are shown below.") + `<div class="words" style="margin-top:8px">${S.wal.words.map((w, i) => `<span><i>${i+1}</i>${w}</span>`).join("")}</div>`}; }
+  if (a === "askreset") { S.confirmReset = true; }
+  if (a === "cancelreset") { S.confirmReset = false; }
+  if (a === "reset") { const lang = S.lang; S = blank(); S.lang = lang; S.view = "progress"; }
+  save(); render();
+}
+
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { S.view = b.dataset.view; S.lesson = null; save(); render(); window.scrollTo(0, 0); });
+$("#lang").onclick = () => { S.lang = J() ? "en" : "ja"; save(); render(); };
+render();
+fetch("prices.json", {cache:"no-store"}).then(r => r.ok ? r.json() : null).then(d => {
+  if (!d || !d.coins) return;
+  for (const c of Object.keys(COINS)) { const p = d.coins[c]; if (Array.isArray(p) && p.length >= 30 && p.every(v => v > 0)) COINS[c].px = p.slice(-30).map(Math.round); else return; }
+  REAL = String(d.as_of || "").slice(0, 10); render();
+}).catch(() => {});
+})();
+</script>
+</body>
+</html>
