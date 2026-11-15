@@ -6,7 +6,7 @@
 
 **https://nndahedeyo.github.io/kasou-shisan/**
 
-- **基本の部屋（14部屋）**：ブロックチェーン、鍵・アドレス・ウォレット、取引所に預けることと自分で持つこと、販売所と取引所（板）、ネットワーク、送る前の確認、署名と使用の許可、詐欺の見分け方、鍵の守り方と相続、トークンの価値の見方、約束と担保、値動きの読み方、投機の罠、日本のルール
+- **基本の部屋（8部屋）**：本番で取引を始めるまでに最低限知っておくこと。暗号資産とは、鍵・アドレス・ウォレット、取引所に預けるか自分で持つか、買い方と手数料、送るときの4つの確認、署名と詐欺、税金、鍵の守り方と引き継ぎ。慣れてきた人向けに「銘柄の中身の見方」
 - **体験の部屋（11段階）**：本物と同じ流れを、架空の画面で通して体験します
   1. 取引所の口座開設（本人確認・2段階認証）
   2. 円の入金
@@ -37,4 +37,4 @@ MIT
 
 ## English
 
-A practice hall where people new to crypto learn the core ideas and how things work, **without spending any money**. 14 lessons and an 11-step hands-on run through the real flow (exchange account, order book, wallet, withdrawal, sending, DEX swap, restore), on fictional screens, in Japanese and English. Everything marked 仮 (kari, "practice") is not real and can't be exchanged for money or crypto. Price lines copy the last 30 days of real BTC, ETH and SOL prices in yen (CoinGecko, updated daily). It never tells you what to buy. Progress stays on your device. License: MIT.
+A practice hall where people new to crypto learn the core ideas and how things work, **without spending any money**. 8 essential lessons (including taxes) and an 11-step hands-on run through the real flow (exchange account, order book, wallet, withdrawal, sending, DEX swap, restore), on fictional screens, in Japanese and English. Everything marked 仮 (kari, "practice") is not real and can't be exchanged for money or crypto. Price lines copy the last 30 days of real BTC, ETH and SOL prices in yen (CoinGecko, updated daily). It never tells you what to buy. Progress stays on your device. License: MIT.
