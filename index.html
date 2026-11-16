@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="暗号資産に初めて触れる人が、お金を使わずに口座開設から取引所・ウォレット・DEXまでの流れを体験する練習所">
-<title>仮想資産 練習所</title>
+<title>仮想市場 練習所</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -122,6 +122,7 @@ input,select,textarea{font:inherit;padding:8px 10px;border-radius:8px;border:1px
 .book .barc{position:relative}
 .book .barc i{position:absolute;right:0;top:2px;bottom:2px;opacity:.14}
 .book tr.ask .barc i{background:var(--sell)} .book tr.bid .barc i{background:var(--buy)}
+.tbl td:first-child{white-space:nowrap}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th,.tbl td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left}
 .tbl td.r,.tbl th.r{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
@@ -159,6 +160,15 @@ svg.chart{width:100%;height:auto;display:block}
 .swapbox{max-width:420px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:8px}
 .swapfield{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--sunk);display:flex;flex-direction:column;gap:4px}
 .swapfield .row input{border:none;background:none;font-size:22px;font-family:var(--mono);padding:0}
+.hq{display:inline-grid;place-items:center;width:22px;height:22px;padding:0;margin-left:6px;border-radius:999px;font-size:12px;font-weight:700;color:var(--indigo);border-color:var(--indigo);vertical-align:middle;line-height:1}
+.hrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.hterm{padding:3px 10px;border-radius:999px;font-size:13px;color:var(--indigo);border-color:var(--indigo);background:var(--card)}
+.hterm::after{content:" ?";font-weight:700}
+#help .overlay{z-index:60}
+.popup.help{width:min(100%,480px);max-height:86vh;overflow:auto}
+.popup.help p{margin:0}
+.glist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.glist button{text-align:left;font-size:14px}
 .foot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
 @media (prefers-reduced-motion:no-preference){.fb,.popup{animation:fade .2s ease}}
 @keyframes fade{from{opacity:.4;transform:translateY(3px)}to{opacity:1;transform:none}}
@@ -169,8 +179,8 @@ svg.chart{width:100%;height:auto;display:block}
 <div class="wrap">
   <header>
     <div class="seal" aria-hidden="true">仮</div>
-    <div class="brand"><h1 id="t-title">仮想資産 練習所</h1><p id="t-sub"></p></div>
-    <div class="tools"><button id="lang" type="button">English</button></div>
+    <div class="brand"><h1 id="t-title">仮想市場 練習所</h1><p id="t-sub"></p></div>
+    <div class="tools row"><button id="gloss" type="button">用語集</button><button id="lang" type="button">English</button></div>
   </header>
   <div class="notice" id="t-notice"></div>
   <nav class="tabs" role="tablist">
@@ -179,6 +189,7 @@ svg.chart{width:100%;height:auto;display:block}
     <button role="tab" id="tab-progress" aria-selected="false" data-view="progress"></button>
   </nav>
   <main id="main"></main>
+  <div id="help"></div>
   <p class="foot" id="t-foot"></p>
 </div>
 
@@ -383,10 +394,84 @@ const doneT = (n, k) => !!(S.done[n] && S.done[n][k]);
 const markT = (n, k) => { S.done[n] = S.done[n] || {}; S.done[n][k] = true; };
 const stepOk = n => { const s = STEPS[n-1]; return s.tj.every((_, k) => doneT(n, k)); };
 
+
+/* ---------- help ---------- */
+const HELP = {
+ book:{ja:["板の見方",["板は、いま出ている注文の一覧です。","上の赤い行は「この値段なら売りたい」という注文、下の緑の行は「この値段なら買いたい」という注文です。真ん中が今の値段です。","赤の一番下が、今すぐ買える一番安い値段です。緑の一番上が、今すぐ売れる一番高い値段です。","「数量」はその値段に並んでいる量で、横の帯が長いほど多く並んでいます。","成行で買うと、赤の一番下から順に買います。たくさん買うと、上の高い値段まで買い進むことになります。"]],
+       en:["Reading the order book",["The order book lists the orders waiting right now.","Red rows at the top are people who want to sell at that price. Green rows below are people who want to buy. The middle is the current price.","The lowest red row is the cheapest price you can buy at right now. The highest green row is the best price you can sell at right now.","Size is how much is waiting at that price; a longer bar means more.","A market buy takes from the lowest red row upward. A big order climbs into higher prices."]]},
+ chart:{ja:["チャートの見方",["横は時間（左が30日前、右が今）、縦は値段です。","点線は、この期間で一番高い値段と一番安い値段です。右端の赤い点が今の値段です。","過去の動きから、これからの値段を当てることはできません。"]],
+        en:["Reading the chart",["Left to right is time (30 days ago to now); up and down is price.","The dotted lines mark the highest and lowest price in the period. The red dot is now.","Past movement can't tell you the future price."]]},
+ otc:{ja:["販売所と取引所の違い",["販売所：会社が相手です。示された値段で、かんたんに買えます。そのかわり、買う値段と売る値段の差（スプレッド）が広く、割高になりがちです。","取引所（板）：ほかの利用者が相手です。板を見て、成行か指値で注文します。手数料は安いことが多いですが、操作は少し難しくなります。","同じ会社のサイトの中に、両方があることがよくあります。"]],
+      en:["Dealer desk vs order book",["Dealer desk: the company is the other side. You buy at the price shown, easily, but the gap between buy and sell prices (the spread) is wide, so it costs more.","Order book: other users are the other side. You place market or limit orders. Fees are usually lower, but it takes a little more care.","One company's site often has both."]]},
+ spread:{ja:["スプレッド",["買う値段と売る値段の差です。","販売所では、この差が実質の手数料です。買ってすぐ売ると、この差の分だけ損をします。"]],
+         en:["Spread",["The gap between the buy price and the sell price.","At a dealer desk this gap is effectively the fee: buy and sell right away and you lose the gap."]]},
+ market:{ja:["成行（なりゆき）",["値段を決めずに、板にある一番よい値段ですぐに売り買いする注文です。","すぐに約定しますが、値段は選べません。手数料は指値より高いことが多いです。"]],
+         en:["Market order",["An order with no price: it trades right away at the best price on the book.","It fills immediately, but you don't choose the price. Fees are often higher than for limit orders."]]},
+ limit:{ja:["指値（さしね）",["「この値段なら買う（売る）」と、値段を決めて出す注文です。","値段がそこまで来るまで約定しません。来なければ待ち続け、取り消すこともできます。","待っている間は「注文中」に並びます。"]],
+        en:["Limit order",["An order with your own price: \"buy (or sell) at this price\".","It doesn't fill until the price gets there. If it never does, it waits, and you can cancel it.","While waiting it shows under Open orders."]]},
+ fill:{ja:["約定（やくじょう）",["注文が成立して、実際に売り買いが決まることです。"]],en:["Fill",["When an order is matched and the trade actually happens."]]},
+ open:{ja:["注文中",["出したけれど、まだ約定していない指値の注文です。","取り消すと、押さえていた仮円や暗号資産が戻ります。"]],en:["Open orders",["Limit orders you placed that haven't filled yet.","Cancel one and the yen or crypto it was holding comes back."]]},
+ fills:{ja:["約定履歴",["成立した売り買いの記録です。","本物では、税金の計算に使うので、取引の履歴を保存しておきます。"]],en:["Trade history",["The record of trades that went through.","For real, keep it: you need it to work out taxes."]]},
+ advance:{ja:["時間を進める",["練習用のボタンです。本物では値段は休みなく動き続けますが、ここでは押したときだけ値段が動きます。"]],en:["Advance time",["A practice-only button. Real prices move all the time; here they move only when you press it."]]},
+ value:{ja:["評価額",["持っている量に、今の値段をかけた金額です。","実際に売ったときに受け取れる額とは違います（手数料やスプレッドがかかります）。"]],en:["Value",["Amount held times the current price.","Not what you'd actually get by selling: fees and the spread come off."]]},
+ kyc:{ja:["本人確認",["法律で求められている手続きです。身分証と顔の写真で、本人であることを確かめます。","他人の名義や、架空の名前では口座を作れません。"]],en:["Identity check",["Required by law: an ID document and a photo of your face.","You can't open an account in someone else's or a made-up name."]]},
+ twofa:{ja:["2段階認証",["パスワードに加えて、スマホの認証アプリが出す6桁のコードを入れる仕組みです。コードは30秒ごとに変わります。","パスワードが漏れても、スマホがなければログインや出金ができません。","認証アプリを入れたスマホをなくすと自分も入れなくなるので、設定のときに出る復旧用のコードも保管します。"]],
+        en:["Two-step verification",["Besides the password, you enter a 6-digit code from an authenticator app on your phone. The code changes every 30 seconds.","Even if the password leaks, no one can log in or withdraw without your phone.","Losing that phone locks you out too, so keep the backup codes shown at setup."]]},
+ deposit:{ja:["入金と出金",["入金：取引所に円や暗号資産を入れること。出金：取引所から外へ出すこと（円は銀行へ、暗号資産はウォレットなどへ）。","取引所の中にあるうちは、取引所が預かっている状態です。自分で鍵を持つには、ウォレットへ出金します。"]],
+          en:["Deposit and withdraw",["Deposit: put yen or crypto into the exchange. Withdraw: take it out (yen to a bank, crypto to a wallet).","While it's on the exchange, the exchange holds it for you. To hold the key yourself, withdraw to your wallet."]]},
+ onlyeth:{ja:["なぜ仮ETHしか送り出せないの？",["この練習のウォレットは、仮イーサリアム網のウォレットです。","仮BTCはビットコインのネットワーク、仮SOLはソラナのネットワークの資産です。受け取るには、そのネットワークに対応したウォレットとアドレスが別に必要です。","本物でも、ウォレットが対応していないネットワークの資産は受け取れません。また、取引所によっては、出金できない銘柄もあります。買う前に「どこへ送れるか」を確かめます。"]],
+          en:["Why only Kari-ETH?",["The practice wallet is a Kari-Ethereum wallet.","Kari-BTC lives on the Bitcoin network and Kari-SOL on Solana. Receiving them needs a separate wallet and address for that network.","For real, too, a wallet can't receive assets on networks it doesn't support, and some exchanges don't allow withdrawing certain coins. Check where you can send a coin before you buy."]]},
+ dest:{ja:["送り先の登録とトラベルルール",["国内の取引所では、暗号資産を送り出す前に送り先を登録し、受取人の名前と送り先の種類（自分で管理するウォレットか、ほかの取引所か）を答えます。","犯罪に使われないように、送る人と受け取る人の情報を記録する決まり（トラベルルール）があるためです。"]],
+       en:["Destinations and the travel rule",["Japanese exchanges make you register a destination before sending crypto, with the recipient's name and type (your own wallet or another exchange).","This is the travel rule: sender and recipient details are recorded to stop crime."]]},
+ wfee:{ja:["出金手数料",["取引所から外へ送るときに、取引所が取る手数料です。銘柄ごとに決まった量で、送る量とは別にかかります。"]],en:["Withdrawal fee",["What the exchange charges to send crypto out: a fixed amount per coin, on top of what you send."]]},
+ network:{ja:["ネットワーク",["暗号資産が記録される台帳（ブロックチェーン）の種類です。","同じETHやUSDCでも、いくつものネットワークにあります。送る側と受け取る側で同じネットワークを選ばないと、届かないことがあります。"]],
+          en:["Network",["Which ledger (blockchain) the asset is recorded on.","The same ETH or USDC exists on several networks. If sender and receiver don't pick the same one, it may never arrive."]]},
+ address:{ja:["アドレス",["受け取り用の口座番号のようなものです。0xで始まる長い英数字です。","1文字でも違えば別の相手に届き、取り消せません。手で打たずにコピーし、最初と最後だけでなく、真ん中の文字も確かめます。"]],
+          en:["Address",["Like an account number for receiving: a long string starting with 0x.","One wrong character sends it to someone else, with no undo. Copy it instead of typing, and check the middle too, not just the start and end."]]},
+ wallet:{ja:["ウォレット",["自分で鍵を持つアプリです。","中にお金が入っているのではなく、台帳の上にある自分のアドレスを動かすための鍵を持っています。だから、アプリが消えても、鍵（英単語）があれば戻せます。"]],
+         en:["Wallet",["An app where you hold the key yourself.","The money isn't inside it: it holds the key to your address on the ledger. That's why the words can bring it back even if the app is gone."]]},
+ seed:{ja:["リカバリーフレーズ",["ウォレットの鍵そのものです。ふつうは英単語12個か24個です。","これがあれば、別のスマホでも同じウォレットを開けます。これを知る人は、誰でも中身を動かせます。","紙に書き、人に見せません。写真やクラウドには保存しません。運営会社も代わりに覚えていません。"]],
+       en:["Recovery phrase",["The wallet's key itself, usually 12 or 24 English words.","With it, the same wallet opens on any phone. Anyone who knows it can move everything.","Write it on paper and show no one. No photos, no cloud. No company keeps a copy for you."]]},
+ gas:{ja:["ネットワーク手数料（ガス代）",["ネットワークに取引を記録してもらうための手数料です。イーサリアムではETHで払います。混んでいると高くなります。","ETHがないと、USDCなどほかのトークンも送れません。"]],en:["Network fee (gas)",["Paid to get your transaction recorded. On Ethereum it's paid in ETH, and rises when the network is busy.","Without ETH you can't send USDC or any other token."]]},
+ pending:{ja:["確認中",["送った取引が、まだネットワークで記録されていない状態です。少し待つと「完了」になります。本物では数秒から数分です。"]],en:["Confirming",["The transaction hasn't been recorded on the network yet. It turns to Done shortly; for real, seconds to minutes."]]},
+ dex:{ja:["DEX（分散型取引所）",["会社を通さずに、ウォレットから直接交換できるサイトです。","本人確認はありませんが、間違えても助けてくれる窓口もありません。"]],en:["DEX",["A site where you swap straight from your wallet, with no company in between.","No identity check, but no help desk either if you make a mistake."]]},
+ connect:{ja:["ウォレットの接続",["サイトに自分のアドレスを見せることです。これだけでは、お金は動きません。","お金が動くのは、ウォレットに出る確認画面で「確定」を押したときだけです。"]],en:["Connecting a wallet",["Shows the site your address. No money moves.","Money moves only when you press Confirm on the wallet's confirm screen."]]},
+ rate:{ja:["交換レート",["1つのトークンが、もう1つのトークンのいくつと交換できるかです。"]],en:["Rate",["How much of one token you get for one of the other."]]},
+ slip:{ja:["最低受取額と許容ずれ",["確定してから実際に交換されるまでに、値段が少し動くことがあります。そのずれを何%まで許すかが「許容ずれ」です。","それより悪くなると、取引は自動で取り消されます。「最低受取額」は、少なくともこれだけは受け取れるという量です。"]],
+       en:["Minimum received and slippage",["The price can move a little between confirming and the swap happening. Slippage is how much of that you'll accept.","If it gets worse than that, the swap cancels itself. Minimum received is the least you'll get."]]},
+ allow:{ja:["使用の許可",["ETH以外のトークンを交換に出すときは、先にそのサイトの仕組みに「このトークンを使ってよい」と許可を出します。","上限を「無制限」にすると、あとでそのサイトが乗っ取られたときに、全部動かされるおそれがあります。必要な分だけにします。"]],
+        en:["Spending permission",["Before swapping a token other than ETH, you allow the site's contract to use it.","An unlimited cap means if the site is later hacked, all of it could be taken. Allow only what you need."]]},
+ contract:{ja:["契約アドレス",["トークンやサイトの仕組みを動かすプログラムのアドレスです。","名前もアイコンも同じ偽物のトークンがあるので、本物かどうかは契約アドレスで確かめます。"]],en:["Contract address",["The address of the program behind a token or site.","Fakes can copy the name and icon, so check the contract address to tell the real one."]]},
+ stable:{ja:["USDC（ステーブルコイン）",["1ドルなど、決まった通貨と同じ値段になるように作られたトークンです。発行する会社が預かっている資産が裏付けです。","ここでは、1 仮USDC＝150仮円の見本です。"]],en:["USDC (stablecoin)",["A token built to stay at the price of a currency such as one dollar, backed by assets the issuer holds.","Here, 1 Kari-USDC is a sample worth 150 Kari-yen."]]},
+};
+const GLOSS = ["book","chart","otc","spread","market","limit","fill","open","fills","value","advance","kyc","twofa","deposit","dest","wfee","onlyeth","network","address","wallet","seed","gas","pending","dex","connect","rate","slip","allow","contract","stable"];
+const hp = k => `<button type="button" class="hq" data-help="${k}" aria-label="${tx("説明","Explain")}：${esc(HELP[k][S.lang === "ja" ? "ja" : "en"][0])}">?</button>`;
+const terms = (...ks) => `<div class="hrow"><span class="small">${tx("わからない言葉","Unsure?")}：</span>${ks.map(k => `<button type="button" class="hterm" data-help="${k}">${esc(HELP[k][S.lang === "ja" ? "ja" : "en"][0])}</button>`).join("")}</div>`;
+let helpKey = null, helpFrom = null;
+function drawHelp(){
+  const box = $("#help"); if (!box) return;
+  if (!helpKey) { box.innerHTML = ""; return; }
+  const L_ = S.lang === "ja" ? "ja" : "en";
+  let ttl, body, back = "";
+  if (helpKey === "__all") { ttl = tx("用語集","Glossary");
+    body = `<p class="small">${tx("知りたい言葉を押してください。画面の中の「?」からも、同じ説明が開きます。","Tap a word. The ? marks on the screens open the same explanations.")}</p><div class="glist">${GLOSS.map(k => `<button type="button" data-help="${k}" data-hfrom="all">${esc(HELP[k][L_][0])}</button>`).join("")}</div>`; }
+  else { const h = HELP[helpKey][L_]; ttl = h[0]; body = h[1].map(p => `<p>${esc(p)}</p>`).join("");
+    back = helpFrom === "all" ? `<button type="button" data-help="__all">${tx("← 用語集","← Glossary")}</button>` : `<button type="button" data-help="__all">${tx("用語集を開く","Open glossary")}</button>`; }
+  box.innerHTML = `<div class="overlay" data-hclose><div class="popup help" role="dialog" aria-modal="true" aria-labelledby="hp-ttl"><div class="ttl" id="hp-ttl">${esc(ttl)}</div>${body}<div class="row" style="justify-content:space-between">${back}<button type="button" class="primary" data-hx>${tx("閉じる","Close")}</button></div></div></div>`;
+  const x = box.querySelector("[data-hx]"); if (x) try { x.focus({preventScroll:true}); } catch (e) {}
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest ? e.target.closest("[data-help],[data-hx]") : null;
+  if (t && t.hasAttribute("data-hx")) { helpKey = null; drawHelp(); return; }
+  if (t) { e.preventDefault(); helpFrom = t.dataset.hfrom || null; helpKey = t.dataset.help; drawHelp(); return; }
+  if (helpKey && e.target.hasAttribute && e.target.hasAttribute("data-hclose")) { helpKey = null; drawHelp(); }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && helpKey) { helpKey = null; drawHelp(); } });
+
 /* ---------- static ---------- */
 function staticText(){
   document.documentElement.lang = S.lang;
-  $("#t-title").textContent = tx("仮想資産 練習所", "Kasou Shisan Practice Hall");
+  $("#t-title").textContent = tx("仮想市場 練習所", "Kasou Shijo Practice Hall");
   $("#t-sub").textContent = tx("暗号資産を、お金を使わずに一から体験する場所", "Experience crypto from scratch without spending money");
   $("#t-notice").innerHTML = (REAL
     ? tx(`<b>ここは練習所です。</b>お金も本物の暗号資産も、一切使いません。「仮」の付いたものは、すべて本物ではありません。値動きは、本物のBTC・ETH・SOLの過去30日の円建て価格を写したものです（CoinGecko、${REAL}時点）。`,
@@ -397,6 +482,7 @@ function staticText(){
   $("#tab-exp").textContent = tx("体験の部屋", "Hands-on");
   $("#tab-progress").textContent = tx("進み具合", "Progress");
   $("#lang").textContent = J() ? "English" : "日本語";
+  $("#gloss").textContent = tx("用語集", "Glossary");
   $("#t-foot").textContent = tx("この練習所は、どの銘柄を買うべきかは教えません。画面は実在のサービスをまねたものではなく、よくある形を再現した架空のものです。記録はこの端末の中だけに残ります。",
     "This hall never tells you what to buy. The screens are fictional, built on common layouts, and copy no real service. Your progress stays on this device only.");
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.view === S.view)));
@@ -444,7 +530,7 @@ function expView(){
   const todos = (J() ? st.tj : st.te).map((t, k) => `<li class="${doneT(st.n, k) ? "ok" : ""}">${esc(t)}</li>`).join("");
   const g = gflash; gflash = null;
   const guide = `<aside class="guide"><div class="card"><span class="small">${tx("いまの段階","Current step")} ${st.n} / ${STEPS.length}</span><h3>${esc(J() ? st.ja : st.en)}</h3>
-    <ol class="todo">${todos}</ol>${st.n === 11 ? inhHtml() : ""}${stepOk(st.n) ? "" : `<div class="fb warn" style="font-size:14px"><b>${tx("次にやること","Next")}：</b>${nextAction(st.n)}</div>`}${hint(st.n)}${g ? `<div class="fb ${g.k}">${g.m}</div>` : ""}
+    <ol class="todo">${todos}</ol>${st.n === 11 ? inhHtml() : ""}${stepOk(st.n) ? "" : `<div class="fb warn" style="font-size:14px"><b>${tx("次にやること","Next")}：</b>${nextAction(st.n)}</div>`}${hint(st.n)}<p class="small">${tx("わからない言葉や画面の見方は、「?」の印か、上の「用語集」で調べられます。","Unsure of a word or a screen? Tap a ? mark, or open the Glossary at the top.")}</p>${g ? `<div class="fb ${g.k}">${g.m}</div>` : ""}
     ${stepOk(st.n) && st.n < STEPS.length ? `<button type="button" class="primary" data-step="${st.n+1}">${tx("次の段階へ","Next step")}</button>` : ""}
     ${stepOk(st.n) && st.n === STEPS.length ? `<div class="fb ok">${tx("すべての段階を終えました。本物を扱うときも、ここと同じ順番で確かめてください。","You've finished every step. With the real thing, check things in the same order.")}</div>` : ""}</div>
     <details class="card" ${window.innerWidth > 880 ? "open" : ""}><summary class="small" style="cursor:pointer">${tx("段階の一覧","All steps")}</summary><div class="stepper">${STEPS.map(s => `<button type="button" data-step="${s.n}" class="${s.n === S.step ? "cur" : ""}"><span class="num">${s.n}</span>${esc(J() ? s.ja : s.en)}${stepOk(s.n) ? `<span class="st">✓</span>` : ""}</button>`).join("")}</div></details></aside>`;
@@ -463,9 +549,10 @@ function nextAction(n){
   if (n === 4) return !doneT(4,0) ? T(`${scr("ex")}の「取引所」で「買い」「成行」を選び、数量を入れて「買い注文を出す」。`, `On the ${scr("ex")}, open Order book, choose Buy and Market, then place the order.`)
     : !doneT(4,1) ? T("「指値」を選び、値段と数量を入れて注文を出す。","Choose Limit, enter a price and amount, and place it.") : T("「時間を進める」を何回か押して、指値が約定するのを待つ。","Press Advance time a few times until the limit order fills.");
   if (n === 5) return !w ? T(`${scr("wal")}で「新しいウォレットを作成」。`, `In the ${scr("wal")}, press Create a new wallet.`) : !w.pwSet ? T("パスワードを2回入れて「作成」。","Enter the password twice and press Create.")
-    : !w.reveal ? T("「タップして表示」で英単語12個を出し、紙に書き写す。","Reveal the 12 words and copy them onto paper.") : !w.checking ? T("書き写したら「書き留めました」。","Press I wrote them down.") : T("抜けている番号の英単語を、順番に選んで「確認」。","Pick the missing words in order and press Confirm.");
+    : !w.reveal ? T("「タップして表示」で英単語12個を出し、紙に書き写す（練習なので、下のボタンで飛ばすこともできます）。","Reveal the 12 words and copy them onto paper (or skip with the button below, for practice).") : !w.checking ? T("書き写したら「書き留めました」。","Press I wrote them down.") : T("抜けている番号の英単語を、順番に選んで「確認」。","Pick the missing words in order and press Confirm.");
   if (n >= 6 && (!w || !w.backed)) return T("先に段階5でウォレットを作ってください。","Create your wallet in step 5 first.");
   if (n === 6) { const ok = (S.wds || []).some(x => x.st === "done");
+    if (!ok && S.exb.ETH < 0.004 && (S.exb.BTC > 0 || S.exb.SOL > 0)) return T(`取引所に${cn("ETH")}が足りません。ウォレットに送れるのは${cn("ETH")}だけなので、${scr("ex")}の「販売所」か「取引所」で${cn("ETH")}を買ってください（${cn("BTC")}・${cn("SOL")}は送れません）。`, `Not enough ${cn("ETH")}. Only ${cn("ETH")} can go to the wallet, so buy some on the ${scr("ex")} (${cn("BTC")} and ${cn("SOL")} can't be sent).`);
     if (!ok && S.exb.ETH < 0.004) return T(`取引所に仮ETHがありません。${scr("ex")}の「販売所」か「取引所」で仮ETHを買ってください。`, `No Kari-ETH on the exchange. Buy some on the ${scr("ex")}.`);
     if (!S.copied) return T(`${scr("wal")}の「受け取る」で「アドレスをコピー」。`, `In the ${scr("wal")}, open Receive and press Copy address.`);
     if (!S.dests.some(d => d.addr === w.addr && d.net === "eth")) return T(`${scr("ex")}の「資産・入出金」→「送り先を登録する」。ネットワークは仮イーサリアム、アドレスは「ウォレットの…コピーした」を押して入れ、2段階認証のコードを入れて「登録する」。`, `On the ${scr("ex")}, Assets → Register a destination. Network Kari-Ethereum, paste the address copied from the wallet, enter the code and register.`);
@@ -476,7 +563,7 @@ function nextAction(n){
     : !doneT(8,1) ? T("支払う量（0.02 仮ETHなど）を確かめて「交換する」→ 確認画面で「確定」。","Check the amount (e.g. 0.02 Kari-ETH), press Swap, then Confirm.")
     : T("⇅ で向きを変え、「仮USDCの使用を許可する」→ 使用上限で「この取引の分だけ」を選んで「確定」→「交換する」→「確定」。","Flip with ⇅, press Allow Kari-USDC, choose Only this trade, Confirm, then Swap and Confirm.");
   if (n === 9) return T(`${scr("dex")}で、3つの依頼に「確定」か「拒否」を選び、下の2つのトークンから本物を選ぶ。`, `On the ${scr("dex")}, decide on the three requests, then pick the real token below.`);
-  if (n === 10) return !S.lost ? T(`${scr("wal")}の「設定」→「スマホをなくしたことにする」。`, `In the ${scr("wal")}, Settings → Pretend the phone is lost.`) : T("「既存のウォレットを復元」で、英単語12個を順番どおりに、スペースで区切って入れる。","Press Restore and type the 12 words in order, separated by spaces.");
+  if (n === 10) return !S.lost ? T(`${scr("wal")}の「設定」→「スマホをなくしたことにする」。`, `In the ${scr("wal")}, Settings → Pretend the phone is lost.`) : T("「既存のウォレットを復元」で、英単語12個を順番どおりに、スペースで区切って入れる（紙がなければ「英単語を自動で入れる」）。","Press Restore and type the 12 words in order, separated by spaces (or use Fill in the words for me).");
   if (n === 11) return T("上の3つにチェックを入れる。","Tick the three boxes above.");
   return "";
 }
@@ -484,10 +571,10 @@ function hint(n){
   const H = {
     1:tx("本物の取引所でも、口座を開くときは本人確認と2段階認証が必要です。2段階認証は、パスワードが漏れても、スマホのコードがなければログインや送金ができないようにする仕組みです。","Real exchanges also require identity checks and two-step verification. Two-step means a leaked password alone can't log in or withdraw without the code on your phone."),
     2:tx("本物では、取引所が指定する銀行口座へ振り込みます。振込名義は口座の名義と同じにします。","For real, you transfer to the bank account the exchange gives you, under your own name."),
-    3:tx("販売所の画面では「買う値段」と「売る値段」が並びます。その差が、実質の手数料です。","The dealer desk shows a buy price and a sell price. The gap is effectively your fee."),
+    3:tx("販売所の画面では「買う値段」と「売る値段」が並びます。その差が、実質の手数料です。この練習でウォレットに送れるのは仮ETHだけなので、仮ETHを買っておきます。","The dealer desk shows a buy price and a sell price. The gap is effectively your fee. Only Kari-ETH can go to the practice wallet, so buy Kari-ETH."),
     4:tx("板の赤は売りたい人の注文、緑は買いたい人の注文です。成行はすぐ約定し、指値は値段が届いたときに約定します。","Red rows are sell orders, green rows are buy orders. Market orders fill now; limit orders fill when the price reaches them."),
     5:tx("本物のウォレットのリカバリーフレーズは、ふつう英単語12個か24個です。ここで出る英単語は、本物のウォレットでは使えないように、わざと無効にしてあります。","Real recovery phrases are usually 12 or 24 English words. These practice words are deliberately invalid so they never work in a real wallet."),
-    6:tx("国内の取引所では、送り先を先に登録し、受取人とその種類（自分が管理するウォレットか、ほかの取引所か）を答えます。送る前に、ネットワークが合っているかを必ず確かめます。","Japanese exchanges make you register the destination first and declare the recipient and its type. Always check the network before sending."),
+    6:tx("国内の取引所では、送り先を先に登録し、受取人とその種類（自分が管理するウォレットか、ほかの取引所か）を答えます。送る前に、ネットワークが合っているかを必ず確かめます。この練習で送れるのは仮ETHだけです。","Japanese exchanges make you register the destination first and declare the recipient and its type. Always check the network before sending. Only Kari-ETH can be sent in this practice."),
     7:tx("イーサリアムでは、送るたびにネットワーク手数料をETHで払います。ETHがないと、USDCなども送れません。","On Ethereum every transfer pays a network fee in ETH. Without ETH you can't send USDC or anything else."),
     8:tx("DEXは、会社を通さず、ウォレットから直接交換する場所です。接続はアドレスを見せるだけで、お金は動きません。お金が動くのは「確定」を押したときです。","A DEX swaps straight from your wallet, with no company in between. Connecting only shows your address; money moves only when you press Confirm."),
     9:tx("迷ったら、確定しないのが一番安全です。断っても失うものはありません。","When in doubt, don't confirm. Rejecting costs you nothing."),
@@ -527,11 +614,11 @@ function signupHtml(){
     <label>${tx("パスワード（8文字以上）","Password (8+ characters)")}<input id="pw" type="password" autocomplete="new-password"></label>
     <p class="small">${tx("本物では、ほかのサービスと同じパスワードは使いません。","For real, never reuse a password from another service.")}</p>
     <button type="button" class="primary" data-act="signup">${tx("登録する","Sign up")}</button></div>`;
-  if (!a.kyc) return `<div class="panel" style="max-width:420px"><h3>${tx("本人確認","Identity verification")}</h3>
+  if (!a.kyc) return `<div class="panel" style="max-width:420px"><h3>${tx("本人確認","Identity verification")}${hp("kyc")}</h3>
     <p>${tx("本物では、運転免許証やマイナンバーカードと、自分の顔をスマホで撮影します。審査には数分から数日かかります。","For real, you photograph your ID card and your face with your phone. Review takes minutes to days.")}</p>
     <ol class="todo"><li>${tx("本人確認書類を撮影する","Photograph your ID")}</li><li>${tx("顔を撮影する","Take a selfie")}</li><li>${tx("職業や取引の目的を答える","Answer questions about your job and purpose")}</li></ol>
     <button type="button" class="primary" data-act="kyc">${tx("撮影したことにして提出する","Submit (pretend you took the photos)")}</button></div>`;
-  return `<div class="panel" style="max-width:420px"><h3>${tx("2段階認証の設定","Set up two-step verification")}</h3>
+  return `<div class="panel" style="max-width:420px"><h3>${tx("2段階認証の設定","Set up two-step verification")}${hp("twofa")}</h3>
     <p>${tx("スマホに認証アプリを入れ、表示される6桁のコードを入力します。コードは30秒ごとに変わります。","Install an authenticator app and enter the 6-digit code it shows. The code changes every 30 seconds.")}</p>
     <div class="panel" style="background:var(--sunk)"><span class="small">${tx("認証アプリ（練習用）","Authenticator app (practice)")}</span><span class="mono otp-live" style="font-size:26px;letter-spacing:.2em">${code()}</span></div>
     <label>${tx("6桁のコード","6-digit code")}<input id="otp" inputmode="numeric" maxlength="6" autocomplete="off"></label>
@@ -554,13 +641,13 @@ function chart(c){
     <circle cx="${X(29)}" cy="${Y(px[29])}" r="4" fill="var(--stamp)"/>
     <text x="${W - pad}" y="${Y(hi) - 4}" font-size="11" fill="var(--muted)" text-anchor="end">${yen(hi)}</text><text x="${W - pad}" y="${Y(lo) + 12}" font-size="11" fill="var(--muted)" text-anchor="end">${yen(lo)}</text>
     <text x="${pad}" y="${H + 14}" font-size="11" fill="var(--muted)">${tx("30日前","30 days ago")}</text><text x="${W - pad}" y="${H + 14}" font-size="11" fill="var(--muted)" text-anchor="end">${tx("今","Now")}</text></svg>
-    <p class="small">${REAL ? tx(`本物の${c}の値動きを写しています（CoinGecko、${REAL}時点）。${cn(c)}は本物ではありません。`, `Copies the real ${c} price (CoinGecko, as of ${REAL}). ${cn(c)} is not real.`) : tx("見本の値動きです。実際の価格ではありません。","A sample line, not the real price.")}</p>`;
+    ${terms("chart")}<p class="small">${REAL ? tx(`本物の${c}の値動きを写しています（CoinGecko、${REAL}時点）。${cn(c)}は本物ではありません。`, `Copies the real ${c} price (CoinGecko, as of ${REAL}). ${cn(c)} is not real.`) : tx("見本の値動きです。実際の価格ではありません。","A sample line, not the real price.")}</p>`;
 }
 function otcHtml(){
   const c = S.coin, m = mid(c), ask = m * 1.02, bid = m * 0.98;
   return `${coinPick()}<div class="grid2"><div class="panel">${chart(c)}</div>
-    <div class="panel"><h3>${tx("販売所","Dealer desk")}：${cn(c)}</h3>
-    <dl class="kv"><dt>${tx("買う値段","Buy price")}</dt><dd style="color:var(--buy)">${yen(ask)} ${tx("仮円","Kari-yen")}</dd><dt>${tx("売る値段","Sell price")}</dt><dd style="color:var(--sell)">${yen(bid)} ${tx("仮円","Kari-yen")}</dd><dt>${tx("差（スプレッド）","Spread")}</dt><dd>${yen(ask - bid)}（${((ask - bid) / m * 100).toFixed(1)}%）</dd></dl>
+    <div class="panel"><h3>${tx("販売所","Dealer desk")}：${cn(c)}${hp("otc")}</h3>
+    <dl class="kv"><dt>${tx("買う値段","Buy price")}</dt><dd style="color:var(--buy)">${yen(ask)} ${tx("仮円","Kari-yen")}</dd><dt>${tx("売る値段","Sell price")}</dt><dd style="color:var(--sell)">${yen(bid)} ${tx("仮円","Kari-yen")}</dd><dt>${tx("差（スプレッド）","Spread")}${hp("spread")}</dt><dd>${yen(ask - bid)}（${((ask - bid) / m * 100).toFixed(1)}%）</dd></dl>
     <label>${tx("使う金額（仮円）","Amount (Kari-yen)")}<input id="otcamt" type="number" min="1000" step="1000" value="30000" inputmode="numeric"></label>
     <div class="row"><button type="button" class="buy" data-act="otcbuy">${tx("買う","Buy")}</button><button type="button" class="sell" data-act="otcsell">${tx("同じ金額分を売る","Sell this amount")}</button></div>
     <dl class="kv"><dt>${tx("仮円の残高","Kari-yen")}</dt><dd>${yen(S.jpy)}</dd><dt>${cn(c)}</dt><dd>${q(S.exb[c], c)}</dd></dl></div></div>`;
@@ -576,10 +663,10 @@ function bookHtml(){
   const row = (cls, [p, s]) => `<tr class="${cls}"><td>${yen(p)}</td><td class="barc"><i style="width:${(s / mx * 100).toFixed(0)}%"></i>${s.toFixed(3)}</td></tr>`;
   const open = S.orders.filter(o => o.st === "open");
   return `${coinPick()}<div class="grid2">
-    <div class="panel"><h3>${tx("板","Order book")}：${cn(c)}</h3><div class="scroll-x"><table class="book"><thead><tr><td>${tx("値段","Price")}</td><td>${tx("数量","Size")}</td></tr></thead><tbody>
+    <div class="panel"><h3>${tx("板","Order book")}：${cn(c)}${hp("book")}</h3><div class="scroll-x"><table class="book"><thead><tr><td>${tx("値段","Price")}</td><td>${tx("数量","Size")}</td></tr></thead><tbody>
       ${b.asks.slice().reverse().map(x => row("ask", x)).join("")}<tr class="mid"><td colspan="2">${tx("今の値段","Last")} ${yen(mid(c))}</td></tr>${b.bids.map(x => row("bid", x)).join("")}</tbody></table></div>
-      <p class="small">${tx("赤＝売りたい人の注文、緑＝買いたい人の注文","Red = sell orders, green = buy orders")}</p></div>
-    <div class="panel"><h3>${tx("注文","Order")}</h3>
+      <p class="small">${tx("赤＝売りたい人の注文、緑＝買いたい人の注文","Red = sell orders, green = buy orders")}</p>${terms("book", "otc")}</div>
+    <div class="panel"><h3>${tx("注文","Order")}</h3>${terms("market", "limit", "fill")}
       <div class="seg"><button type="button" class="b" data-side="buy" aria-pressed="${S.side === "buy"}">${tx("買い","Buy")}</button><button type="button" class="s" data-side="sell" aria-pressed="${S.side === "sell"}">${tx("売り","Sell")}</button></div>
       <div class="seg"><button type="button" class="n" data-otype="market" aria-pressed="${S.otype === "market"}">${tx("成行","Market")}</button><button type="button" class="n" data-otype="limit" aria-pressed="${S.otype === "limit"}">${tx("指値","Limit")}</button></div>
       ${S.otype === "limit" ? `<label>${tx("値段（仮円）","Price (Kari-yen)")}<input id="lp" type="number" step="${b.tick}" value="${S.side === "buy" ? b.base - b.tick * 2 : b.base + b.tick * 3}"></label>` : `<p class="small">${tx("成行は、板にある一番よい値段ですぐに約定します。","A market order fills right away at the best price on the book.")}</p>`}
@@ -587,18 +674,19 @@ function bookHtml(){
       <p class="small">${tx("手数料（見本）：成行 0.1%、指値 0%","Fees (sample): market 0.1%, limit 0%")}</p>
       <button type="button" class="${S.side === "buy" ? "buy" : "sell"}" data-act="order">${S.side === "buy" ? tx("買い注文を出す","Place buy order") : tx("売り注文を出す","Place sell order")}</button>
       <dl class="kv"><dt>${tx("仮円の残高","Kari-yen")}</dt><dd>${yen(S.jpy)}</dd><dt>${cn(c)}</dt><dd>${q(S.exb[c], c)}</dd></dl>
-      <button type="button" data-act="advance">${tx("時間を進める（値段が動く）","Advance time (price moves)")}</button></div></div>
-    <div class="panel"><h3>${tx("注文中","Open orders")}</h3>${open.length ? `<div class="scroll-x"><table class="tbl"><tr><th>${tx("銘柄","Coin")}</th><th>${tx("売買","Side")}</th><th class="r">${tx("値段","Price")}</th><th class="r">${tx("数量","Amount")}</th><th></th></tr>
+      <div class="row"><button type="button" data-act="advance">${tx("時間を進める（値段が動く）","Advance time (price moves)")}</button>${hp("advance")}</div></div></div>
+    <div class="panel"><h3>${tx("注文中","Open orders")}${hp("open")}</h3>${open.length ? `<div class="scroll-x"><table class="tbl"><tr><th>${tx("銘柄","Coin")}</th><th>${tx("売買","Side")}</th><th class="r">${tx("値段","Price")}</th><th class="r">${tx("数量","Amount")}</th><th></th></tr>
       ${open.map(o => `<tr><td>${cn(o.c)}</td><td style="color:var(--${o.side === "buy" ? "buy" : "sell"})">${o.side === "buy" ? tx("買い","Buy") : tx("売り","Sell")}</td><td class="r">${yen(o.p)}</td><td class="r">${q(o.qty, o.c)}</td><td><button type="button" class="link" data-cancel="${o.id}">${tx("取消","Cancel")}</button></td></tr>`).join("")}</table></div>` : `<p class="small">${tx("ありません","None")}</p>`}
-      <h3>${tx("約定履歴","Filled")}</h3>${S.fills.length ? `<div class="scroll-x"><table class="tbl"><tr><th>${tx("銘柄","Coin")}</th><th>${tx("売買","Side")}</th><th class="r">${tx("値段","Price")}</th><th class="r">${tx("数量","Amount")}</th><th class="r">${tx("手数料","Fee")}</th></tr>
+      <h3>${tx("約定履歴","Filled")}${hp("fills")}</h3>${S.fills.length ? `<div class="scroll-x"><table class="tbl"><tr><th>${tx("銘柄","Coin")}</th><th>${tx("売買","Side")}</th><th class="r">${tx("値段","Price")}</th><th class="r">${tx("数量","Amount")}</th><th class="r">${tx("手数料","Fee")}</th></tr>
       ${S.fills.slice(-6).reverse().map(f => `<tr><td>${cn(f.c)}</td><td>${f.side === "buy" ? tx("買い","Buy") : tx("売り","Sell")}${f.how ? `（${f.how}）` : ""}</td><td class="r">${yen(f.p)}</td><td class="r">${q(f.qty, f.c)}</td><td class="r">${yen(f.fee)}</td></tr>`).join("")}</table></div>` : `<p class="small">${tx("まだありません","None yet")}</p>`}</div>`;
 }
 function assetsHtml(){
   const dests = S.dests, wds = S.wds;
   const tot = S.jpy + ["BTC","ETH","SOL"].reduce((s, c) => s + S.exb[c] * mid(c), 0);
-  const regForm = S.regOpen ? `<div class="panel" style="background:var(--sunk)"><h3>${tx("送り先の登録","Register a destination")}</h3>
+  const regForm = S.regOpen ? `<div class="panel" style="background:var(--sunk)"><h3>${tx("送り先の登録","Register a destination")}${hp("dest")}</h3>${terms("network", "address", "onlyeth")}
       <label>${tx("名前（自分で分かるように）","Label")}<input id="dl" value="${tx("自分のウォレット","My wallet")}"></label>
       <label>${tx("銘柄","Coin")}<select id="dc"><option value="ETH">${cn("ETH")}</option></select></label>
+      <p class="small">${tx(`練習用ウォレットは仮イーサリアム網のウォレットなので、選べるのは${cn("ETH")}だけです。`, `The practice wallet is on Kari-Ethereum, so ${cn("ETH")} is the only choice.`)}</p>
       <label>${tx("ネットワーク","Network")}<select id="dn"><option value="eth">${tx("仮イーサリアム","Kari-Ethereum")}</option><option value="bnb">${tx("仮BNBチェーン","Kari-BNB Chain")}</option></select></label>
       <label>${tx("アドレス","Address")}<input id="da" class="mono" autocomplete="off" spellcheck="false" placeholder="0x…"></label>
       <div class="row"><button type="button" class="link" data-act="pastewal">${tx("ウォレットの「受け取る」画面からコピーした","Paste what I copied from the wallet's Receive screen")}</button><button type="button" class="link" data-act="pastehist">${tx("前に届いた入金の履歴からコピーする","Copy from an earlier deposit in my history")}</button></div>
@@ -607,19 +695,22 @@ function assetsHtml(){
       <label>${tx("2段階認証のコード","Two-step code")}<input id="otp2" class="otp-in" inputmode="numeric" maxlength="6" placeholder="${code()}"></label>
       <p class="small">${tx("練習なので、認証アプリのコードを入力欄に薄い文字で表示しています。それを入力してください。","For practice, the authenticator code is shown faintly in the field. Type it in.")}</p>
       <div class="row"><button type="button" class="primary" data-act="regdest">${tx("登録する","Register")}</button><button type="button" data-act="regclose">${tx("やめる","Cancel")}</button></div></div>` : "";
-  return `<div class="grid2"><div class="panel"><h3>${tx("資産","Assets")}</h3><dl class="kv"><dt>${tx("評価額の合計","Total value")}</dt><dd>${yen(tot)} ${tx("仮円","Kari-yen")}</dd></dl>
-      <div class="scroll-x"><table class="tbl"><tr><th>${tx("銘柄","Coin")}</th><th class="r">${tx("数量","Amount")}</th><th class="r">${tx("評価額","Value")}</th></tr>
-      <tr><td>${coin("JPY")} ${tx("仮円","Kari-yen")}</td><td class="r">${yen(S.jpy)}</td><td class="r">${yen(S.jpy)}</td></tr>
-      ${["BTC","ETH","SOL"].map(c => `<tr><td>${coin(c)} ${cn(c)}</td><td class="r">${q(S.exb[c], c)}</td><td class="r">${yen(S.exb[c] * mid(c))}</td></tr>`).join("")}</table></div>
+  return `<div class="grid2"><div class="panel"><h3>${tx("資産","Assets")}${hp("deposit")}</h3><dl class="kv"><dt>${tx("評価額の合計","Total value")}${hp("value")}</dt><dd>${yen(tot)} ${tx("仮円","Kari-yen")}</dd></dl>
+      <div class="scroll-x"><table class="tbl"><tr><th>${tx("銘柄","Coin")}</th><th class="r">${tx("数量","Amount")}</th><th class="r">${tx("評価額","Value")}</th><th>${tx("送り出し","Send out")}</th></tr>
+      <tr><td>${coin("JPY")} ${tx("仮円","Kari-yen")}</td><td class="r">${yen(S.jpy)}</td><td class="r">${yen(S.jpy)}</td><td class="small">—</td></tr>
+      ${["BTC","ETH","SOL"].map(c => `<tr><td>${coin(c)} ${cn(c)}</td><td class="r">${q(S.exb[c], c)}</td><td class="r">${yen(S.exb[c] * mid(c))}</td><td class="small">${c === "ETH" ? tx("可","Yes") : tx("不可","No")}</td></tr>`).join("")}</table></div>
+      <p class="small">${tx(`練習用ウォレットに送り出せるのは${cn("ETH")}だけです。${cn("BTC")}と${cn("SOL")}は別のネットワークの資産なので、取引所の中で売り買いの練習だけができます。`, `Only ${cn("ETH")} can go to the practice wallet. ${cn("BTC")} and ${cn("SOL")} live on other networks, so here they're for trading practice only.`)}${hp("onlyeth")}</p>
       <h3>${tx("入金","Deposit")}</h3><p class="small">${tx("本物では、取引所が指定する銀行口座へ、口座名義と同じ名前で振り込みます。","For real, you transfer to the exchange's bank account under your own name.")}</p>
       <button type="button" class="primary" data-act="deposit" ${S.deposited ? "disabled" : ""}>${tx("10万仮円を振り込んだことにする","Pretend to transfer 100,000 Kari-yen")}</button></div>
-    <div class="panel"><h3>${tx("出金（暗号資産を送り出す）","Withdraw crypto")}</h3>
-      <p class="small">${tx("送り出せるのは、先に登録した送り先だけです。","You can only send to destinations you registered first.")}</p>
+    <div class="panel"><h3>${tx("出金（暗号資産を送り出す）","Withdraw crypto")}${hp("deposit")}</h3>
+      <p class="small">${tx(`この練習で送り出せる銘柄は${cn("ETH")}だけです。送り出せるのは、先に登録した送り先だけです。`, `In this practice only ${cn("ETH")} can be sent out, and only to destinations you registered first.`)}</p>
+      ${terms("onlyeth", "dest", "wfee")}
       ${dests.length ? `<label>${tx("送り先","Destination")}<select id="wd">${dests.map((d, i) => `<option value="${i}">${esc(d.label)}（${d.net === "eth" ? tx("仮イーサリアム","Kari-Ethereum") : tx("仮BNBチェーン","Kari-BNB Chain")}・${short(d.addr)}）</option>`).join("")}</select></label>
+        <label>${tx("銘柄","Coin")}<select id="wc" disabled><option>${cn("ETH")}</option></select></label>
         <label>${tx("数量","Amount")}（${cn("ETH")}）<input id="wq" type="number" step="any" min="0" value="${q(Math.max(0, S.exb.ETH / 2), "ETH")}"></label>
-        <dl class="kv"><dt>${tx("出金手数料","Withdrawal fee")}</dt><dd>0.002 ${cn("ETH")}</dd><dt>${tx("出金できる量","Available")}</dt><dd>${q(S.exb.ETH, "ETH")}</dd></dl>
+        <dl class="kv"><dt>${tx("出金手数料","Withdrawal fee")}${hp("wfee")}</dt><dd>0.002 ${cn("ETH")}</dd><dt>${tx("出金できる量","Available")}</dt><dd>${q(S.exb.ETH, "ETH")}</dd></dl>
         <label>${tx("2段階認証のコード","Two-step code")}<input id="otp3" class="otp-in" inputmode="numeric" maxlength="6" placeholder="${code()}"></label>
-        <button type="button" class="primary" data-act="withdraw">${tx("出金する","Withdraw")}</button>` : `<p>${tx("送り先がまだ登録されていません。","No destination registered yet.")}</p>`}
+        <button type="button" class="primary" data-act="withdraw">${tx("出金する","Withdraw")}</button>` : `<p>${tx("送り先がまだ登録されていません。","No destination registered yet.")}</p>${S.exb.ETH < 0.004 ? `<p class="small">${tx(`送り出すには${cn("ETH")}が必要です（出金手数料0.002を含む）。「販売所」か「取引所」で買えます。`, `You need ${cn("ETH")} to send (including the 0.002 fee). Buy it at the Dealer desk or Order book.`)}</p>` : ""}`}
       ${!S.regOpen ? `<button type="button" data-act="regopen">${tx("送り先を登録する","Register a destination")}</button>` : ""}${regForm}
       ${wds.length ? `<h3>${tx("出金の履歴","Withdrawals")}</h3><div class="scroll-x"><table class="tbl">${wds.slice().reverse().map(w => `<tr><td>${q(w.qty, "ETH")} ${cn("ETH")}</td><td>${short(w.addr)}</td><td>${w.st === "done" ? tx("送金済み","Sent") : w.st === "lost" ? tx("届かず","Lost") : tx("処理中","Processing")}</td></tr>`).join("")}</table></div>` : ""}</div></div>`;
 }
@@ -630,7 +721,7 @@ function walletScreen(){
   const w = S.wal;
   if (!w || S.lost) {
     if (S.restoring) return phone(restoreHtml());
-    return phone(`<div style="text-align:center;display:flex;flex-direction:column;gap:12px;margin-top:40px"><div class="seal" style="margin:0 auto">仮</div><h3>${tx("仮ウォレットへようこそ","Welcome to Kari Wallet")}</h3>
+    return phone(`<div style="text-align:center;display:flex;flex-direction:column;gap:12px;margin-top:40px"><div class="seal" style="margin:0 auto">仮</div><h3>${tx("仮ウォレットへようこそ","Welcome to Kari Wallet")}${hp("wallet")}</h3>
       <p class="small">${tx("自分で鍵を持つウォレットです。","A wallet where you hold the key.")}</p>
       ${S.lost ? `<div class="fb warn">${tx("新しいスマホに入れ直した状態です。前のウォレットは、英単語で元に戻せます。","This is a fresh install on a new phone. Restore your old wallet with its words.")}</div>` : ""}
       <button type="button" class="primary" data-act="wnew" ${S.lost ? "disabled" : ""}>${tx("新しいウォレットを作成","Create a new wallet")}</button>
@@ -640,34 +731,34 @@ function walletScreen(){
     <label>${tx("パスワード（8文字以上）","Password (8+ characters)")}<input id="wp1" type="password" autocomplete="new-password"></label><label>${tx("もう一度","Repeat")}<input id="wp2" type="password" autocomplete="new-password"></label>
     <button type="button" class="primary" data-act="wpw">${tx("作成","Create")}</button>`);
   if (!w.backed) {
-    if (!w.checking) return phone(`<h3>${tx("リカバリーフレーズ","Secret recovery phrase")}</h3>
+    if (!w.checking) return phone(`<h3>${tx("リカバリーフレーズ","Secret recovery phrase")}${hp("seed")}</h3>
       <div class="fb warn" style="font-size:14px">${tx("この12個の英単語を知る人は、誰でもあなたの資産を動かせます。紙に書き、誰にも見せないでください。写真やスクリーンショットは撮らないでください。","Anyone with these 12 words can move your assets. Write them on paper and show no one. No photos or screenshots.")}</div>
       <div class="words ${w.reveal ? "" : "blur"}">${w.words.map((x, i) => `<span><i>${i+1}</i>${x}</span>`).join("")}</div>
       ${w.reveal ? "" : `<button type="button" data-act="reveal">${tx("タップして表示（周りに人がいないことを確かめて）","Tap to reveal (make sure no one is watching)")}</button>`}
       <p class="small">${tx("練習用の英単語は、本物のウォレットでは使えないように、わざと無効にしてあります。","These practice words are deliberately invalid in real wallets.")}</p>
-      <button type="button" class="primary" data-act="tocheck" ${w.reveal ? "" : "disabled"}>${tx("書き留めました","I wrote them down")}</button>`);
+      <button type="button" class="primary" data-act="tocheck" ${w.reveal ? "" : "disabled"}>${tx("書き留めました","I wrote them down")}</button>${skipSeed()}`);
     const filled = w.fill || {};
     const pool = w.ask.map(k => w.words[k]).concat(w.decoy).sort();
     return phone(`<h3>${tx("リカバリーフレーズの確認","Confirm your phrase")}</h3><p class="small">${tx("抜けている番号の英単語を、書き写した紙を見て選んでください。","Fill in the missing words from your paper.")}</p>
       <div class="words">${w.words.map((x, i) => w.ask.includes(i) ? `<span style="border-color:var(--indigo)"><i>${i+1}</i>${filled[i] || "＿＿"}</span>` : `<span><i>${i+1}</i>•••</span>`).join("")}</div>
       <p class="small">${tx("次に入る番号","Next slot")}：${(w.ask.find(k => !filled[k]) ?? -1) + 1 || "—"}</p>
       <div class="chips">${pool.map(x => `<button type="button" data-fill="${x}" ${Object.values(filled).includes(x) ? "disabled" : ""}>${x}</button>`).join("")}</div>
-      <div class="row"><button type="button" data-act="fillclear">${tx("やり直す","Clear")}</button><button type="button" class="primary" data-act="fillok" ${w.ask.every(k => filled[k]) ? "" : "disabled"}>${tx("確認","Confirm")}</button><button type="button" class="link" data-act="backtowords">${tx("英単語をもう一度見る","Show the words again")}</button></div>`);
+      <div class="row"><button type="button" data-act="fillclear">${tx("やり直す","Clear")}</button><button type="button" class="primary" data-act="fillok" ${w.ask.every(k => filled[k]) ? "" : "disabled"}>${tx("確認","Confirm")}</button><button type="button" class="link" data-act="backtowords">${tx("英単語をもう一度見る","Show the words again")}</button></div>${skipSeed()}`);
   }
   const tot = (w.bal.ETH || 0) * mid("ETH") + (w.bal.USDC || 0) * USDC_YEN;
   const top = `<div class="app-top"><span class="pill">● ${tx("仮イーサリアム","Kari-Ethereum")}</span><span style="margin-left:auto" class="small">${tx("アカウント1","Account 1")}</span></div>
     <button type="button" class="link mono" data-act="copyaddr" style="align-self:center">${short(w.addr)} ⧉</button>`;
-  if (S.wscr === "recv") return phone(`${top}<h3>${tx("受け取る","Receive")}</h3>${qrSvg(w.addr)}<div class="addr">${w.addr}</div>
-    <div class="fb warn" style="font-size:14px">${tx("このアドレスに送れるのは、仮イーサリアム網の資産だけです。ほかのネットワークで送られたものは、届かないことがあります。","Only send Kari-Ethereum network assets to this address. Assets sent on other networks may never arrive.")}</div>
+  if (S.wscr === "recv") return phone(`${top}<h3>${tx("受け取る","Receive")}${hp("address")}</h3>${qrSvg(w.addr)}<div class="addr">${w.addr}</div>
+    <div class="fb warn" style="font-size:14px">${tx("このアドレスに送れるのは、仮イーサリアム網の資産だけです。ほかのネットワークで送られたものは、届かないことがあります。仮BTCや仮SOLは、このウォレットでは受け取れません。","Only send Kari-Ethereum network assets to this address. Assets sent on other networks may never arrive. Kari-BTC and Kari-SOL can't be received here.")}</div>${terms("address", "network", "onlyeth")}
     <button type="button" class="primary" data-act="copyfull">${tx("アドレスをコピー","Copy address")}</button><button type="button" data-wscr="home">${tx("戻る","Back")}</button>`);
   if (S.wscr === "send") {
     const sd = S.sendDraft || {};
     if (sd.confirm) { const fee = 0.0004, tok = sd.tok;
-      return phone(`${top}<h3>${tx("送金の確認","Confirm send")}</h3><dl class="kv"><dt>${tx("送り先","To")}</dt><dd>${short(sd.to)}</dd><dt>${tx("送る量","Amount")}</dt><dd>${q(sd.amt, tok)} ${cn(tok)}</dd><dt>${tx("ネットワーク手数料","Network fee")}</dt><dd>${fee} ${cn("ETH")}（≈${yen(fee * mid("ETH"))}${tx("仮円","")}）</dd>
+      return phone(`${top}<h3>${tx("送金の確認","Confirm send")}</h3><dl class="kv"><dt>${tx("送り先","To")}</dt><dd>${short(sd.to)}</dd><dt>${tx("送る量","Amount")}</dt><dd>${q(sd.amt, tok)} ${cn(tok)}</dd><dt>${tx("ネットワーク手数料","Network fee")}${hp("gas")}</dt><dd>${fee} ${cn("ETH")}（≈${yen(fee * mid("ETH"))}${tx("仮円","")}）</dd>
         <dt>${tx("合計","Total")}</dt><dd>${tok === "ETH" ? q(+sd.amt + fee, "ETH") + " " + cn("ETH") : q(sd.amt, tok) + " " + cn(tok) + " + " + fee + " " + cn("ETH")}</dd></dl>
         <p class="small">${tx("送り先の全部の文字を、もう一度確かめてください。確定すると取り消せません。","Check every character of the address once more. Confirming can't be undone.")}</p><div class="addr">${sd.to}</div>
         <div class="row"><button type="button" data-act="sendback">${tx("戻る","Back")}</button><button type="button" class="primary" data-act="sendgo">${tx("確定","Confirm")}</button></div>`); }
-    return phone(`${top}<h3>${tx("送る","Send")}</h3>
+    return phone(`${top}<h3>${tx("送る","Send")}</h3>${terms("address", "gas")}
       <label>${tx("送り先のアドレス","To address")}<input id="st" class="mono" value="${esc(sd.to || "")}" autocomplete="off" spellcheck="false" placeholder="0x…"></label>
       ${S.friend ? `<p class="small">${tx("練習用の友人のアドレス","Practice friend's address")}：<button type="button" class="link mono" data-act="pastefriend">${short(S.friend)}</button></p>` : ""}
       <label>${tx("トークン","Token")}<select id="stok"><option value="ETH">${cn("ETH")}（${q(w.bal.ETH || 0, "ETH")}）</option><option value="USDC" ${sd.tok === "USDC" ? "selected" : ""}>${cn("USDC")}（${q(w.bal.USDC || 0, "USDC")}）</option></select></label>
@@ -679,14 +770,19 @@ function walletScreen(){
   const acts = (w.acts || []).slice(-6).reverse();
   return phone(`${top}<div class="bigbal">${yen(tot)}<span class="small"> ${tx("仮円","Kari-yen")}</span></div>
     <div class="actions"><button type="button" data-wscr="recv"><span>↓</span>${tx("受け取る","Receive")}</button><button type="button" data-wscr="send"><span>↑</span>${tx("送る","Send")}</button><button type="button" data-act="toswap"><span>⇄</span>${tx("交換","Swap")}</button><button type="button" data-wscr="settings"><span>⚙</span>${tx("設定","Settings")}</button></div>
-    <div class="subtabs"><button type="button" data-wtab="tok" aria-pressed="${S.wtab !== "act"}">${tx("トークン","Tokens")}</button><button type="button" data-wtab="act" aria-pressed="${S.wtab === "act"}">${tx("アクティビティ","Activity")}</button></div>
+    <div class="subtabs"><button type="button" data-wtab="tok" aria-pressed="${S.wtab !== "act"}">${tx("トークン","Tokens")}</button><button type="button" data-wtab="act" aria-pressed="${S.wtab === "act"}">${tx("アクティビティ","Activity")}</button>${S.wtab === "act" ? hp("pending") : ""}</div>
     ${S.wtab === "act" ? (acts.length ? acts.map(a => `<div class="tok"><span>${esc(J() ? a.ja : a.en)}</span><span class="v">${a.st === "pending" ? tx("確認中…","Confirming…") : a.st === "fail" ? tx("失敗","Failed") : tx("完了","Done")}</span></div>`).join("") : `<p class="small">${tx("まだありません","Nothing yet")}</p>`)
       : ["ETH","USDC"].map(t => `<div class="tok">${coin(t)}<span>${cn(t)}</span><span class="v">${q(w.bal[t] || 0, t)}<small>${yen((w.bal[t] || 0) * (t === "ETH" ? mid("ETH") : USDC_YEN))} ${tx("仮円","Kari-yen")}</small></span></div>`).join("")}
     ${(w.acts || []).some(a => a.st === "pending") ? `<button type="button" data-act="confirmpending">${tx("時間を進める（承認を待つ）","Advance time (wait for confirmation)")}</button>` : ""}`);
 }
+function skipSeed(){
+  return `<div class="panel" style="background:var(--sunk);gap:6px"><span class="small">${tx("書き写しと確認は、練習なので飛ばせます。本物のウォレットでは飛ばさないでください。飛ばすと、書き間違いに気づけず、スマホをなくしたときに戻せないことがあります。","For practice you can skip writing and confirming. Never skip it in a real wallet: a mistake would go unnoticed, and a lost phone could mean lost funds.")}</span>
+    <button type="button" class="link" data-act="skipseed" style="align-self:flex-start">${tx("練習なので、英単語の書き写しと確認を飛ばす","Skip writing and confirming (practice only)")}</button></div>`;
+}
 function restoreHtml(){
-  return `<h3>${tx("既存のウォレットを復元","Restore an existing wallet")}</h3><p class="small">${tx("書き写した12個の英単語を、順番どおりに、半角スペースで区切って入力します。","Type your 12 words in order, separated by spaces.")}</p>
+  return `<h3>${tx("既存のウォレットを復元","Restore an existing wallet")}${hp("seed")}</h3><p class="small">${tx("書き写した12個の英単語を、順番どおりに、半角スペースで区切って入力します。","Type your 12 words in order, separated by spaces.")}</p>
     <textarea id="rw" rows="4" class="mono" autocomplete="off" spellcheck="false" autocapitalize="none"></textarea>
+    ${S.wal ? `<button type="button" class="link" data-act="autofill" style="align-self:flex-start">${tx("英単語を自動で入れる（練習用）","Fill in the words for me (practice only)")}</button>` : ""}
     <p class="small">${tx("本物では、リカバリーフレーズを入れるのは、自分で入れたウォレットアプリの中だけです。サイトやメッセージで聞かれても、絶対に入れません。","For real, only ever type your phrase into a wallet app you installed yourself. Never into a website or a message.")}</p>
     <div class="row"><button type="button" data-act="restorecancel">${tx("戻る","Back")}</button><button type="button" class="primary" data-act="restorego">${tx("復元する","Restore")}</button><button type="button" class="link" data-act="lostpaper">${tx("紙をなくした","I lost the paper")}</button></div>`;
 }
@@ -697,7 +793,7 @@ function quote(){ const from = S.dex.from, to = from === "ETH" ? "USDC" : "ETH",
   return {from, to, rate, amt, out, min:out * 0.995}; }
 function dexScreen(){
   const w = S.wal, d = S.dex, connected = d.conn && w && !S.lost && w.backed;
-  const head = `<div class="site-head"><span class="site-logo"><b>仮</b>${tx("スワップ","Swap")}</span><span class="pill">${tx("練習用・架空のDEX","Practice · fictional DEX")}</span>
+  const head = `<div class="site-head"><span class="site-logo"><b>仮</b>${tx("スワップ","Swap")}</span><span class="pill">${tx("練習用・架空のDEX","Practice · fictional DEX")}</span>${hp("dex")}
     <span style="margin-left:auto">${connected ? `<span class="pill mono">● ${short(w.addr)}</span>` : `<button type="button" class="primary" data-act="connect">${tx("ウォレットを接続","Connect wallet")}</button>`}</span></div>`;
   let inner;
   if (S.step === 9) inner = trapsHtml();
@@ -705,11 +801,11 @@ function dexScreen(){
   else {
     const {from, to, rate, amt, out, min:minOut} = quote();
     const needAllow = from === "USDC" && (d.allow || 0) < amt - 1e-9;
-    inner = `<div class="swapbox"><h3>${tx("交換","Swap")}</h3>
+    inner = `<div class="swapbox"><h3>${tx("交換","Swap")}</h3>${terms("connect", "slip", "allow", "stable")}
       <div class="swapfield"><span class="small">${tx("支払う","You pay")}</span><div class="row"><input id="sw" type="number" step="any" min="0" value="${amt}" class="grow"><span class="pill">${coin(from)} ${cn(from)}</span></div><span class="small">${tx("残高","Balance")}：${connected ? q(w.bal[from] || 0, from) : "—"}</span></div>
       <button type="button" data-act="flip" style="align-self:center" aria-label="${tx("向きを入れ替える","Flip")}">⇅</button>
       <div class="swapfield"><span class="small">${tx("受け取る（見込み）","You receive (estimate)")}</span><div class="row"><span class="mono grow" style="font-size:22px" id="swout">${q(out, to)}</span><span class="pill">${coin(to)} ${cn(to)}</span></div></div>
-      <dl class="kv"><dt>${tx("交換レート","Rate")}</dt><dd>1 ${cn("ETH")} = ${q(rate, "USDC")} ${cn("USDC")}</dd><dt>${tx("最低受取額（許容ずれ 0.5%）","Minimum received (0.5% slippage)")}</dt><dd id="swmin">${q(minOut, to)} ${cn(to)}</dd><dt>${tx("交換手数料","Swap fee")}</dt><dd>0.3%</dd><dt>${tx("ネットワーク手数料","Network fee")}</dt><dd>≈0.0006 ${cn("ETH")}</dd></dl>
+      <dl class="kv"><dt>${tx("交換レート","Rate")}${hp("rate")}</dt><dd>1 ${cn("ETH")} = ${q(rate, "USDC")} ${cn("USDC")}</dd><dt>${tx("最低受取額（許容ずれ 0.5%）","Minimum received (0.5% slippage)")}${hp("slip")}</dt><dd id="swmin">${q(minOut, to)} ${cn(to)}</dd><dt>${tx("交換手数料","Swap fee")}</dt><dd>0.3%</dd><dt>${tx("ネットワーク手数料","Network fee")}${hp("gas")}</dt><dd>≈0.0006 ${cn("ETH")}</dd></dl>
       <p class="small">${tx(`${cn("USDC")}は、1 ${cn("USDC")}＝${USDC_YEN}仮円の見本です。`, `${cn("USDC")} is a sample worth ${USDC_YEN} Kari-yen.`)}</p>
       ${!connected ? `<button type="button" class="primary" data-act="connect">${tx("ウォレットを接続","Connect wallet")}</button>`
         : needAllow ? `<button type="button" class="primary" data-act="askallow">${tx(`${cn("USDC")}の使用を許可する`,`Allow ${cn("USDC")} to be used`)}</button><p class="small">${tx("トークンを交換に出すときは、先にこのサイトに使用の許可を出します。","Before swapping a token, you first allow this site to use it.")}</p>`
@@ -729,13 +825,13 @@ function trapsHtml(){
     b:tx("見知らぬ相手に上限なしの許可を出すと、あなたの仮USDCをいつでも全部動かせるようになります。","An unlimited permission to an unknown party lets them move all your Kari-USDC at any time."),
     c:tx("中身が読めない取引は、確定しないのが原則です。「ボーナス」は典型的な誘い文句です。","Don't confirm what you can't read. 'Bonus' is a classic lure.")};
   const fk = S.fake, off = "0xA0b8…6eB48", fakeA = "0xA0b8…6eB4B";
-  return `<p>${tx("ウォレットに、別々のサイトから3つの依頼が届きました。それぞれ、確定するか拒否するかを選んでください。","Your wallet got three requests from different sites. Confirm or reject each one.")}</p>
+  return `<p>${tx("ウォレットに、別々のサイトから3つの依頼が届きました。それぞれ、確定するか拒否するかを選んでください。","Your wallet got three requests from different sites. Confirm or reject each one.")}</p>${terms("allow", "contract")}
     <div class="grid2">${reqs.map(r => { const v = R[r.id], ln = J() ? r.ja : r.en;
       return `<div class="popup" style="width:100%"><span class="from">${r.from}</span><span class="ttl">${ln[0]}</span>${ln.slice(1).map(x => `<span>${x}</span>`).join("")}
         <div class="row"><button type="button" data-sig="${r.id}" data-v="no" ${v ? "disabled" : ""}>${tx("拒否","Reject")}</button><button type="button" class="primary" data-sig="${r.id}" data-v="ok" ${v ? "disabled" : ""}>${tx("確定","Confirm")}</button></div>
         ${v ? `<div class="fb ${v === r.ok ? "ok" : "ng"}">${v === r.ok ? tx("正しい判断です。","Right call.") : tx("本番なら危険でした。","For real, that would have been dangerous.")} ${why[r.id]}</div>` : ""}</div>`; }).join("")}</div>
     ${Object.keys(R).length ? `<div><button type="button" data-act="sigreset">${tx("やり直す","Start over")}</button></div>` : ""}
-    <h3>${tx("本物のトークンを選ぶ","Pick the real token")}</h3><p>${tx("交換の一覧に、同じ名前・同じアイコンの仮USDCが2つあります。","The token list shows two Kari-USDC with the same name and icon.")}</p>
+    <h3>${tx("本物のトークンを選ぶ","Pick the real token")}${hp("contract")}</h3><p>${tx("交換の一覧に、同じ名前・同じアイコンの仮USDCが2つあります。","The token list shows two Kari-USDC with the same name and icon.")}</p>
     <div class="fb info">${tx("仮USDCの公式サイトに載っている契約アドレス","Contract listed on the official Kari-USDC site")}：<span class="mono">${off}</span></div>
     <div class="grid2">${[["x", fakeA], ["y", off]].map(([k, a]) => `<div class="panel"><div class="row">${coin("USDC")}<b>${cn("USDC")}</b></div><span class="small">${tx("契約アドレス","Contract")}</span><span class="mono">${a}</span><button type="button" data-fake="${k}" ${fk ? "disabled" : ""}>${tx("こちらを選ぶ","Choose this one")}</button></div>`).join("")}</div>
     ${fk ? `<div class="fb ${fk === "y" ? "ok" : "ng"}">${fk === "y" ? tx("正解です。","Correct.") : tx("ちがいます。","Not quite.")} ${tx("最後の1文字が違います（B と 8）。見た目では見分けられず、公式の契約アドレスと全部の文字を照らし合わせて初めて分かります。","The last character differs (B vs 8). Only comparing every character with the official contract address reveals it.")}</div><div><button type="button" data-act="fakereset">${tx("やり直す","Try again")}</button></div>` : ""}`;
@@ -755,7 +851,7 @@ function popupHtml(){
     <p class="small">${tx("サイトは「上限なし」を最初に提案してくることがよくあります。","Sites often suggest 'unlimited' first.")}</p>
     <div class="row"><button type="button" data-pop="no">${tx("拒否","Reject")}</button><button type="button" class="primary" data-pop="yes">${tx("確定","Confirm")}</button></div>`;
   if (p.kind === "swap") body = `<span class="from">kari-swap.example</span><span class="ttl">${tx("取引の確認","Confirm transaction")}</span>
-    <dl class="kv"><dt>${tx("出ていく","Out")}</dt><dd>${q(p.amt, p.from)} ${cn(p.from)}</dd><dt>${tx("入ってくる（最低）","In (at least)")}</dt><dd>${q(p.min, p.to)} ${cn(p.to)}</dd><dt>${tx("受け取り先","Receiver")}</dt><dd>${tx("あなた","You")}（${short(w.addr)}）</dd><dt>${tx("ネットワーク手数料","Network fee")}</dt><dd>≈0.0006 ${cn("ETH")}</dd></dl>
+    <dl class="kv"><dt>${tx("出ていく","Out")}</dt><dd>${q(p.amt, p.from)} ${cn(p.from)}</dd><dt>${tx("入ってくる（最低）","In (at least)")}</dt><dd>${q(p.min, p.to)} ${cn(p.to)}</dd><dt>${tx("受け取り先","Receiver")}</dt><dd>${tx("あなた","You")}（${short(w.addr)}）</dd><dt>${tx("ネットワーク手数料","Network fee")}${hp("gas")}</dt><dd>≈0.0006 ${cn("ETH")}</dd></dl>
     <div class="row"><button type="button" data-pop="no">${tx("拒否","Reject")}</button><button type="button" class="primary" data-pop="yes">${tx("確定","Confirm")}</button></div>`;
   return `<div class="overlay"><div class="popup" role="dialog" aria-label="${tx("ウォレットの確認","Wallet confirmation")}">${body}</div></div>`;
 }
@@ -812,8 +908,9 @@ async function act(a, b){
   /* dealer desk */
   if (a === "otcbuy" || a === "otcsell") { const c = S.coin, amt = Math.floor(+$("#otcamt").value || 0), m = mid(c);
     if (a === "otcbuy") { if (amt < 1000) msg("ng", "1,000仮円以上を入れてください。", "Enter at least 1,000."); else if (amt > S.jpy) msg("ng", "仮円が足りません。先に入金してください。", "Not enough Kari-yen. Deposit first.");
-      else { const qty = amt / (m * 1.02); S.jpy -= amt; S.exb[c] += qty; markT(3, 0); if (c === "ETH") markT(3, 1);
-        msg("ok", `${q(qty, c)} ${cn(c)}を、1枚あたり${yen(m * 1.02)}仮円で買いました。今すぐ売ると1枚${yen(m * 0.98)}仮円です。この差が販売所の実質の手数料です。`, `Bought ${q(qty, c)} ${cn(c)} at ${yen(m * 1.02)} each. Selling right now gives ${yen(m * 0.98)} each. That gap is the dealer desk's real fee.`); } }
+      else { const qty = amt / (m * 1.02); S.jpy -= amt; S.exb[c] += qty; if (c === "ETH") { markT(3, 0); markT(3, 1); }
+        msg("ok", `${q(qty, c)} ${cn(c)}を、1枚あたり${yen(m * 1.02)}仮円で買いました。今すぐ売ると1枚${yen(m * 0.98)}仮円です。この差が販売所の実質の手数料です。`, `Bought ${q(qty, c)} ${cn(c)} at ${yen(m * 1.02)} each. Selling right now gives ${yen(m * 0.98)} each. That gap is the dealer desk's real fee.`);
+        if (c !== "ETH" && S.step === 3) flash.m += tx(`<br>段階3では${cn("ETH")}を買います。あとでウォレットに送れるのは${cn("ETH")}だけだからです。`, `<br>Step 3 asks for ${cn("ETH")}: it's the only coin you can send to the wallet later.`); } }
     else { const qty = amt / (m * 0.98); if (qty > S.exb[c] + 1e-12) msg("ng", "売る分の残高が足りません。", "Not enough to sell."); else { S.exb[c] -= qty; S.jpy += amt; msg("ok", `${q(qty, c)} ${cn(c)}を売りました。`, `Sold ${q(qty, c)} ${cn(c)}.`); } } }
   /* order book */
   if (a === "order") { const c = S.coin, qty = +$("#oq").value, bk = bookRows(c);
@@ -864,6 +961,8 @@ async function act(a, b){
   if (a === "reveal") { w.reveal = true; }
   if (a === "tocheck") { w.checking = true; w.fill = {}; markT(5, 1); }
   if (a === "backtowords") { w.checking = false; }
+  if (a === "skipseed") { w.reveal = true; w.checking = false; w.backed = true; w.skipped = true; markT(5, 1); markT(5, 2);
+    msg("warn", "練習なので、書き写しと確認を飛ばしました。ウォレットができました。本物では、ここを飛ばすと、スマホをなくしたときに戻せなくなることがあります。段階10の復元では、英単語を自動で入れるボタンが使えます。", "Skipped for practice. Your wallet is ready. For real, skipping this can mean you can't restore after losing the phone. In step 10 you can have the words filled in for you."); }
   if (a === "fillclear") { w.fill = {}; }
   if (a === "fillok") { if (w.ask.every(k => w.fill[k] === w.words[k])) { w.backed = true; markT(5, 2); msg("ok", "確認できました。ウォレットができました。", "Confirmed. Your wallet is ready."); }
     else { w.fill = {}; msg("ng", "合っていません。書き写した紙を見直してください。本物でここを間違えると、復元できません。", "That doesn't match. Re-check your paper. Get this wrong for real and you can't restore."); } }
@@ -884,6 +983,7 @@ async function act(a, b){
   if (a === "lose") { S.lost = true; S.restoring = false; S.wscr = "home"; markT(10, 0); }
   if (a === "wrestore") { S.restoring = true; }
   if (a === "restorecancel") { S.restoring = false; }
+  if (a === "autofill") { if (w) { $("#rw").value = w.words.join(" "); } return; }
   if (a === "restorego") { const typed = $("#rw").value.trim().toLowerCase().split(/\s+/);
     if (w && typed.join(" ") === w.words.join(" ")) { S.lost = false; S.restoring = false; markT(10, 1); msg("ok", "元に戻りました。残高もそのままです。資産はスマホではなく台帳の上にあり、英単語があれば戻せます。", "Restored, balances intact. The assets live on the ledger, not the phone, and the words bring them back."); }
     else msg("ng", "英単語か順番が違います。本物では、1つでも違うと、別の空のウォレットが開いてしまいます。", "Wrong word or order. For real, one wrong word opens a different, empty wallet."); }
@@ -919,7 +1019,8 @@ function popAnswer(yes){
 }
 
 document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { S.view = b.dataset.view; S.lesson = null; save(); render(); window.scrollTo(0, 0); });
-$("#lang").onclick = () => { S.lang = J() ? "en" : "ja"; save(); render(); };
+$("#lang").onclick = () => { S.lang = J() ? "en" : "ja"; save(); render(); drawHelp(); };
+$("#gloss").onclick = () => { helpKey = "__all"; helpFrom = null; drawHelp(); };
 render();
 fetch("prices.json", {cache:"no-store"}).then(r => r.ok ? r.json() : null).then(d => {
   if (!d || !d.coins) return;
