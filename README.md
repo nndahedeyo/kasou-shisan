@@ -1,4 +1,4 @@
-# 仮想市場 練習所
+# 仮想資産 練習所
 
 [English](#english)
 
@@ -38,3 +38,7 @@ MIT
 ## English
 
 A practice hall where people new to crypto learn the core ideas and how things work, **without spending any money**. 8 essential lessons (including taxes) and an 11-step hands-on run through the real flow (exchange account, order book, wallet, withdrawal, sending, DEX swap, restore), on fictional screens, in Japanese and English. Everything marked 仮 (kari, "practice") is not real and can't be exchanged for money or crypto. Price lines copy the last 30 days of real BTC, ETH and SOL prices in yen (CoinGecko, updated daily). It never tells you what to buy. Progress stays on your device. License: MIT.
+
+## 自動テスト
+
+`tests/` のテストが、人が操作するのと同じ順番でボタンを押し、口座開設から引き継ぎまでの流れ全体と、用語集・説明・飛ばし方を確かめます。画面を変えたとき・提案のとき・毎週1回、スマホの幅とパソコンの幅の両方でGitHub上で自動的に動きます。失敗すると持ち主にメールが届きます。

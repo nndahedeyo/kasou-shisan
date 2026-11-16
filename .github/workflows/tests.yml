@@ -1,0 +1,35 @@
+name: tests
+
+# 人の代わりに、ボタンを押して流れ全体を確かめる自動テスト。
+# 画面（index.html）やテストを変えたとき、提案（プルリクエスト）のとき、毎週1回に動く。
+# 失敗すると、GitHubからリポジトリの持ち主にメールが届く。
+on:
+  push:
+    branches: [main]
+    paths: ["index.html", "tests/**", ".github/workflows/tests.yml"]
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        width: [400, 1200]   # スマホの幅とパソコンの幅
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-save playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - name: 流れ全体（口座開設から引き継ぎまで、わなも含む）
+        run: node tests/flow.js ${{ matrix.width }}
+      - name: 用語集・説明・飛ばし方・出金の表示
+        run: node tests/help.js ${{ matrix.width }}

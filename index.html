@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="暗号資産に初めて触れる人が、お金を使わずに口座開設から取引所・ウォレット・DEXまでの流れを体験する練習所">
-<title>仮想市場 練習所</title>
+<title>仮想資産 練習所</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -179,7 +179,7 @@ svg.chart{width:100%;height:auto;display:block}
 <div class="wrap">
   <header>
     <div class="seal" aria-hidden="true">仮</div>
-    <div class="brand"><h1 id="t-title">仮想市場 練習所</h1><p id="t-sub"></p></div>
+    <div class="brand"><h1 id="t-title">仮想資産 練習所</h1><p id="t-sub"></p></div>
     <div class="tools row"><button id="gloss" type="button">用語集</button><button id="lang" type="button">English</button></div>
   </header>
   <div class="notice" id="t-notice"></div>
@@ -471,7 +471,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && helpKey) {
 /* ---------- static ---------- */
 function staticText(){
   document.documentElement.lang = S.lang;
-  $("#t-title").textContent = tx("仮想市場 練習所", "Kasou Shijo Practice Hall");
+  $("#t-title").textContent = tx("仮想資産 練習所", "Kasou Shisan Practice Hall");
   $("#t-sub").textContent = tx("暗号資産を、お金を使わずに一から体験する場所", "Experience crypto from scratch without spending money");
   $("#t-notice").innerHTML = (REAL
     ? tx(`<b>ここは練習所です。</b>お金も本物の暗号資産も、一切使いません。「仮」の付いたものは、すべて本物ではありません。値動きは、本物のBTC・ETH・SOLの過去30日の円建て価格を写したものです（CoinGecko、${REAL}時点）。`,
