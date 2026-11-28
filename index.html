@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="暗号資産に初めて触れる人が、お金を使わずに口座開設から取引所・ウォレット・DEXまでの流れを体験する練習所">
 <title>仮想資産 練習所</title>
@@ -1024,9 +1025,9 @@ $("#gloss").onclick = () => { helpKey = "__all"; helpFrom = null; drawHelp(); };
 render();
 fetch("prices.json", {cache:"no-store"}).then(r => r.ok ? r.json() : null).then(d => {
   if (!d || !d.coins) return;
-  for (const c of Object.keys(C)) { const p = d.coins[c]; if (!(Array.isArray(p) && p.length >= 30 && p.every(v => v > 0))) return; }
+  for (const c of Object.keys(C)) { const p = d.coins[c]; if (!(Array.isArray(p) && p.length >= 30 && p.every(v => typeof v === "number" && isFinite(v) && v > 0))) return; }
   for (const c of Object.keys(C)) C[c].px = d.coins[c].slice(-30).map(Math.round);
-  REAL = String(d.as_of || "").slice(0, 10); render();
+  REAL = /^\d{4}-\d{2}-\d{2}$/.test(String(d.as_of || "")) ? d.as_of : ""; render();   // 日付の形だけを受け取る
 }).catch(() => {});
 })();
 </script>
